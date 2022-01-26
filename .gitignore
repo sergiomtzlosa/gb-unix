@@ -1,0 +1,7 @@
+*.o
+*.sym
+*.map
+*.gb.ram
+*.sav
+.DS_Store
+.config

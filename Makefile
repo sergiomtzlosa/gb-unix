@@ -1,10 +1,9 @@
 # gb-unix — Game Boy Unix filesystem ROM
 # Uses the bundled RGBDS in tools/rgbds (falls back to $PATH).
 
-RGBDS_DIR := tools/rgbds
-AS := $(RGBDS_DIR)/rgbasm -I src
-LD := $(RGBDS_DIR)/rgblink
-FIX := $(RGBDS_DIR)/rgbfix
+AS := rgbasm -I src
+LD := rgblink
+FIX := rgbfix
 
 ROM := gb-unix.gb
 SRC := $(wildcard src/*.asm)

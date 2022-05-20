@@ -552,11 +552,17 @@ shell_update::
 	add hl, bc
 	xor a
 	ld [hl], a
-	; echo command line into terminal (move tty cursor out of the input line)
+	; echo command line into terminal
+	; ensure cursor is in the scrolling region (0-TERM_BOT), not on UI row 11
+	ld a, [cur_row]
+	cp TERM_BOT + 1
+	jr c, .in_region
+	; cursor is on row 11 (UI), move it back to row TERM_BOT
 	ld a, TERM_BOT
 	ld [cur_row], a
 	xor a
 	ld [cur_col], a
+.in_region:
 	ld hl, sh_promptbuf
 	call txt_print_z
 	ld hl, sh_input

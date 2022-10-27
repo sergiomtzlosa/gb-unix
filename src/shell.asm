@@ -553,16 +553,18 @@ shell_update::
 	xor a
 	ld [hl], a
 	; echo command line into terminal
-	; ensure cursor is in the scrolling region (0-TERM_BOT), not on UI row 11
+	; cursor position is preserved from previous command's output,
+	; but may be on row 11 if this is the first command after shell_enter
 	ld a, [cur_row]
 	cp TERM_BOT + 1
-	jr c, .in_region
-	; cursor is on row 11 (UI), move it back to row TERM_BOT
+	jr c, .print_command
+	; cursor is on UI row 11, need to move it back into scrolling region
+	; use row 10 col 0 as a safe starting point
 	ld a, TERM_BOT
 	ld [cur_row], a
 	xor a
 	ld [cur_col], a
-.in_region:
+.print_command:
 	ld hl, sh_promptbuf
 	call txt_print_z
 	ld hl, sh_input
@@ -582,9 +584,19 @@ shell_update::
 	; execute
 	call sh_tokenize
 	call sh_exec
+	; save terminal cursor position before rendering input UI
+	ld a, [cur_row]
+	push af
+	ld a, [cur_col]
+	push af
 	xor a
 	ld [sh_len], a
 	call shell_render_input
+	; restore terminal cursor position
+	pop af
+	ld [cur_col], a
+	pop af
+	ld [cur_row], a
 	ret
 .key_select:
 	ld a, [shift_on]

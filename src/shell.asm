@@ -10,8 +10,10 @@ section "shellw2", wram0
 
 sh_input::      ds SH_INPUT_MAX + 2
 sh_len::        db
-sh_argc::       db
-sh_args::       ds 8            ; up to 4 zstr pointers
+sh_argc::
+_sh_argc::      db
+sh_args::
+_sh_args::      ds 8            ; up to 4 zstr pointers
 sh_cmd_buf::    ds 12           ; lower-cased command name
 sh_wr_idx::     db              ; echo > file: filename arg index
 sh_used::       db              ; 1 once a character has been typed
@@ -565,6 +567,15 @@ shell_update::
 	xor a
 	ld [cur_col], a
 .print_command:
+	; a mid-line cursor (previous output left without a trailing newline)
+	; would merge the echoed command into that output and clobber it:
+	; always start the echoed line on a fresh line
+	ld a, [cur_col]
+	or a
+	jr z, .echo
+	ld a, $0A
+	call txt_putc
+.echo:
 	ld hl, sh_promptbuf
 	call txt_print_z
 	ld hl, sh_input
@@ -597,6 +608,12 @@ shell_update::
 	ld [cur_col], a
 	pop af
 	ld [cur_row], a
+	; guarantee the command's output reaches the screen atomically: the
+	; next VBlank does one full LCD-off redraw of every dirty row (the
+	; same path the browser's big redraws use) instead of spreading the
+	; update over several budgeted partial blits
+	ld a, 1
+	ld [scr_full], a
 	ret
 .key_select:
 	ld a, [shift_on]
@@ -888,23 +905,9 @@ h_cd::
 	ret
 
 h_pwd::
-	call fs_get_cwd
-	or a
-	jr nz, .path
-	; at the root the whole path is a single "/" which is easy to mistake
-	; for a blank/empty line, so spell it out
-	ld hl, str_root_path
-	call txt_print_z
-	ld a, $0A
-	call txt_putc
-	ret
-.path:
-	call fs_pwd_str
-	ld hl, pwd_buf
-	call txt_print_z
-	ld a, $0A
-	call txt_putc
-	ret
+	; output goes through the SDCC-compiled C path (src/shcmd.c): an
+	; independent implementation of the text output for this command
+	jp _shc_pwd
 
 h_cat::
 	ld a, [sh_argc]
@@ -1031,28 +1034,8 @@ h_echo::
 	ld a, $0A
 	jp txt_putc
 .no_redir:
-	ld b, 1
-.en_loop:
-	ld a, [sh_argc]
-	ld e, a
-	ld a, b
-	cp e
-	jr nc, .en_done
-	ld a, b
-	cp 1
-	jr z, .en_arg
-	ld a, ' '
-	call txt_putc
-.en_arg:
-	ld a, b
-	call sh_arg_hl
-	call txt_print_z
-	inc b
-	jr .en_loop
-.en_done:
-	ld a, $0A
-	call txt_putc
-	ret
+	; plain output goes through the SDCC-compiled C path (src/shcmd.c)
+	jp _shc_echo_plain
 
 h_mkdir::
 	ld a, [sh_argc]
@@ -1232,6 +1215,8 @@ h_uptime::
 	call txt_print_u16
 	ld hl, str_sec
 	call txt_print_z
+	ld a, $0A
+	call txt_putc
 	ret
 
 h_motd::

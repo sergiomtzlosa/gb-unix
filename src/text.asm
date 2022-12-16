@@ -8,12 +8,18 @@
 include "hardware.inc"
 
 section "textw", wram0
-screen_buf::    ds SCREEN_W * SCREEN_H
-dirty_rows::    ds SCREEN_H     ; nonzero = row needs re-blit
-cur_col::       db
-cur_row::       db
-scr_top::       db              ; scroll region (shell uses 0..TERM_BOT)
-scr_bot::       db
+screen_buf::
+_screen_buf::   ds SCREEN_W * SCREEN_H
+dirty_rows::
+_dirty_rows::   ds SCREEN_H     ; nonzero = row needs re-blit
+cur_col::
+_cur_col::      db
+cur_row::
+_cur_row::      db
+scr_top::
+_scr_top::      db              ; scroll region (shell uses 0..TERM_BOT)
+scr_bot::
+_scr_bot::      db
 invert_row::    db              ; row to draw highlighted, $FF = none
 
 section "text", rom0

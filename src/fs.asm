@@ -19,7 +19,8 @@ cwd_stack::     ds 16
 cwd_depth::     db
 token_buf::     ds 12
 fs_name_buf::   ds 12
-pwd_buf::       ds 24
+pwd_buf::
+_pwd_buf::      ds 24
 tmp_stack::     ds 16
 list_entries::  ds 96
 list_count::    db
@@ -118,7 +119,9 @@ fs_get_child::
 ; ---- paths ------------------------------------------------------------
 
 ; fs_get_cwd:: a = current directory node (0 = root).
+; (_fs_get_cwd:: is the underscore alias called from the SDCC C module.)
 fs_get_cwd::
+_fs_get_cwd::
 	ld a, [cwd_depth]
 	or a
 	ret z
@@ -187,7 +190,10 @@ fs_set_cwd::
 	ret
 
 ; fs_pwd_str:: write path of node a into pwd_buf as zstr.
+; (_fs_pwd_str:: is the underscore alias called from the SDCC C module;
+; sdcccall(1) passes the first 8-bit argument in A.)
 fs_pwd_str::
+_fs_pwd_str::
 	push bc
 	push de
 	push hl

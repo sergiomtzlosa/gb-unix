@@ -8,8 +8,10 @@ plus a mini shell (`gbsh`) where you type real commands on an on-screen
 keyboard. Files you create survive power-off via battery-backed SRAM —
 exactly like a game save.
 
-Written in **RGBDS assembly** (no C toolchain). The ROM is 32 KB, MBC1 with
-8 KB battery-backed RAM (cart type `0x03`).
+Written in **RGBDS assembly**, with the `gbsh` shell's `pwd`/`echo` output
+path implemented in C (compiled with [SDCC](https://sdcc.sourceforge.net/)
+to RGBDS-syntax assembly and assembled with `rgbasm`). The ROM is 32 KB,
+MBC1 with 8 KB battery-backed RAM (cart type `0x03`).
 
 ## Controls
 
@@ -118,15 +120,18 @@ Notes:
 
 ## Building
 
-Requires [RGBDS](https://rgbds.gbdev.io/) (`rgbasm`, `rgblink`, `rgbfix`).
+Requires [RGBDS](https://rgbds.gbdev.io/) (`rgbasm`, `rgblink`, `rgbfix`)
+and [SDCC](https://sdcc.sourceforge.net/) (`sdcc`) for the C module.
 
 ```sh
 make            # builds gb-unix.gb
 make clean      # remove build artifacts
 ```
 
-`tools/rgbds/` contains a prebuilt RGBDS used by the Makefile; adjust
-`RGBASM`/`RGLINK`/`RGBFIX` in the Makefile if yours are on `$PATH`.
+The C sources (`src/*.c`) are compiled by SDCC to RGBDS-syntax assembly
+(`--asm=rgbds --no-peep`) and assembled with `rgbasm`; C artifacts land in
+`build/`. `tools/rgbds/` contains a prebuilt RGBDS used by the Makefile;
+adjust `AS`/`CC`/`LD`/`FIX` in the Makefile if yours are on `$PATH`.
 
 ## Running
 
@@ -143,8 +148,9 @@ or flash it to hardware. Try:
 
 ```
 gb-unix/
-├── Makefile            — rgbasm → rgblink → rgbfix, outputs gb-unix.gb
+├── Makefile            — sdcc (C) + rgbasm → rgblink → rgbfix, outputs gb-unix.gb
 ├── README.md
+├── build/              — build artifacts (objects, generated asm)
 ├── tools/              — prebuilt RGBDS + genfont/genlogo/genfs generators
 └── src/
     ├── main.asm        — entry point, cart header, boot, title splash, main loop
@@ -158,6 +164,8 @@ gb-unix/
     ├── browser.asm     — browser UI
     ├── pager.asm       — file viewer
     ├── shell.asm       — tokenizer, command table, executors, tty
+    ├── shcmd.c         — C: pwd/echo output (SDCC → RGBDS asm, see cwrite.asm)
+    ├── cwrite.asm      — asm store/load helpers used by shcmd.c
     ├── keyboard.asm    — on-screen keyboard grid
     ├── fsdata.asm      — the filesystem content itself (motd, man pages, ...)
     └── logodata.asm    — generated splash logo tiles (tools/genlogo.py)

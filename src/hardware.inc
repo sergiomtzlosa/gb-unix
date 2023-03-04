@@ -5,6 +5,22 @@ def rP1          equ $FF00 ; joypad
 def rSB          equ $FF01 ; serial data
 def rSC          equ $FF02 ; serial control
 def rDIV         equ $FF04
+def rNR10        equ $FF10 ; ch1 sweep
+def rNR11        equ $FF11 ; ch1 duty / length
+def rNR12        equ $FF12 ; ch1 envelope
+def rNR13        equ $FF13 ; ch1 frequency low
+def rNR14        equ $FF14 ; ch1 frequency high / trigger
+def rNR21        equ $FF16 ; ch2 duty / length
+def rNR22        equ $FF17 ; ch2 envelope
+def rNR23        equ $FF18 ; ch2 frequency low
+def rNR24        equ $FF19 ; ch2 frequency high / trigger
+def rNR41        equ $FF20 ; ch4 length
+def rNR42        equ $FF21 ; ch4 envelope
+def rNR43        equ $FF22 ; ch4 noise properties
+def rNR44        equ $FF23 ; ch4 trigger
+def rNR50        equ $FF24 ; master volume / terminals
+def rNR51        equ $FF25 ; channel stereo routing
+def rNR52        equ $FF26 ; sound power
 def rLCDC        equ $FF40
 def rSTAT        equ $FF41
 def rSCY         equ $FF42

@@ -28,12 +28,14 @@ MBC1 with 8 KB battery-backed RAM (cart type `0x03`).
 | **Select + Start** | Key help | Leave shell (back to browser) | — |
 
 On the title screen, **Start** or **A** logs in and **Select** opens the key
-help. A tiny pixel-art Tux + `GB-UNIX` logo tops the splash.
+help. A tiny pixel-art Tux + `GB-UNIX` logo tops the splash, and an 8-bit
+chiptune jingle (pulse melody + bass + noise hat) loops here only.
 
 ## The screens
 
 1. **Title** — boot screen with the Tux + `GB-UNIX` splash; Start/A logs in,
-   Select opens the key help.
+   Select opens the key help. The splash jingle plays on this screen only
+   (stopping the moment you log in or open the key help).
 2. **Browser** — an `ls`-style listing of the current directory with a cursor.
    The header shows the cwd path, the footer shows the selected item's info
    (`name`, item count for dirs, `sizeB ro/rw` for files). Select toggles the
@@ -164,6 +166,7 @@ gb-unix/
     ├── browser.asm     — browser UI
     ├── pager.asm       — file viewer
     ├── shell.asm       — tokenizer, command table, executors, tty
+    ├── music.asm       — splash-screen chiptune sequencer + song data
     ├── shcmd.c         — C: pwd/echo output (SDCC → RGBDS asm, see cwrite.asm)
     ├── cwrite.asm      — asm store/load helpers used by shcmd.c
     ├── keyboard.asm    — on-screen keyboard grid

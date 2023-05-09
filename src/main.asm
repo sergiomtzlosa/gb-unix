@@ -30,6 +30,8 @@ boot_start::
 	; font + blank tilemap
 	call load_font
 	call txt_init
+	; sound: power on the APU for the splash jingle
+	call music_init
 	; battery-backed filesystem
 	call sram_init
 	ld [boot_flags], a
@@ -101,16 +103,22 @@ title_enter::
 	ld [mode], a
 	ld a, $FF
 	ld [invert_row], a
+	call music_play       ; splash jingle starts here
 	ret
 
 title_update::
+	call music_update     ; splash jingle only on this screen
 	ld a, [joy_pressed]
 	and J_SELECT
-	jp nz, help_enter
+	jr z, .no_help
+	call music_stop       ; leaving the splash: silence
+	jp help_enter
+.no_help:
 	ld a, [joy_pressed]
 	and J_START | J_A
 	ret z
 	; log in: boot the shell environment, then the browser
+	call music_stop       ; leaving the splash: silence
 	ld a, MODE_BROWSER
 	ld [mode], a
 	jp browser_enter

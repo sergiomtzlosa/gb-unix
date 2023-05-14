@@ -238,7 +238,7 @@ BIN_EXIT = """exit - leave gbsh.
 run in gbsh:
   exit
 
-also Select+Start.
+returns to the splash screen; also Select+Start.
 
 gbsh built-in.
 """

@@ -1234,9 +1234,7 @@ h_motd::
 h_exit::
 	ld a, SCREEN_H - 1
 	ld [scr_bot], a     ; restore tty scroll region for browser/pager
-	ld a, MODE_BROWSER
-	ld [mode], a
-	jp browser_refresh
+	jp title_enter      ; exit = log out, back to the splash screen
 
 ; ---- data -------------------------------------------------------------
 

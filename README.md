@@ -70,7 +70,7 @@ chiptune jingle (pulse melody + bass + noise hat) loops here only.
 | `uname` | Print the system name |
 | `uptime` | Print time since boot (minutes and seconds) |
 | `motd` | Print the message of the day (`/etc/motd`) |
-| `exit` | Leave the shell and return to the browser (same as Select+Start) |
+| `exit` | Log out: return to the splash screen (same as Select+Start) |
 
 Notes:
 

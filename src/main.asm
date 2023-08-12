@@ -47,44 +47,51 @@ boot_start::
 ; ---- title screen -----------------------------------------------------
 
 title_enter::
+	; txt_clear fills the buffer with spaces, marks every row dirty and sets
+	; scr_full, so leaving the shell/help does one atomic full-screen redraw
+	; and no shell text survives the switch back to the splash.
 	call txt_clear
-	; splash art: point buffer rows 0-2 at the logo tiles
+	xor a
+	ld [scr_top], a
+	ld a, SCREEN_H - 1
+	ld [scr_bot], a
+	; splash art: point buffer rows 1-3 at the logo tiles
 	ld hl, logo_map
-	ld de, screen_buf
+	ld de, screen_buf + SCREEN_W
 	ld bc, LOGO_ROWS * SCREEN_W
 	call mem_copy
-	ld a, 5
+	ld a, 6
 	ld c, 1
 	call txt_goto
 	ld hl, title_sub
 	call txt_print_z
-	ld a, 7
+	ld a, 8
 	ld c, 0
 	call txt_goto
 	ld hl, title_frame
 	call txt_print_z
-	ld a, 8
+	ld a, 9
 	ld c, 0
 	call txt_goto
 	ld hl, title_hint1
 	call txt_print_z
-	ld a, 9
+	ld a, 10
 	ld c, 0
 	call txt_goto
 	ld hl, title_hint2
 	call txt_print_z
-	ld a, 10
+	ld a, 11
 	ld c, 0
 	call txt_goto
 	ld hl, title_hint3
 	call txt_print_z
-	ld a, 11
+	ld a, 12
 	ld c, 0
 	call txt_goto
 	ld hl, title_frame
 	call txt_print_z
 	; mount status from boot_flags bit0
-	ld a, 13
+	ld a, 14
 	ld c, 2
 	call txt_goto
 	ld a, [boot_flags]
@@ -94,7 +101,7 @@ title_enter::
 	ld hl, title_newfs
 .p:
 	call txt_print_z
-	ld a, 15
+	ld a, 16
 	ld c, 0
 	call txt_goto
 	ld hl, title_login
@@ -195,9 +202,9 @@ wait_vblank::
 
 title_sub:     db "a tiny unix for GB", 0
 title_frame:   db "+------------------+", 0
-title_hint1:   db "|START login       |", 0
+title_hint1:   db "|   START login    |", 0
 title_hint2:   db "|then START = gbsh |", 0
-title_hint3:   db "|SELECT help       |", 0
+title_hint3:   db "|   SELECT help    |", 0
 title_newfs:   db "fs: save created", 0
 title_loadfs:  db "fs: save loaded", 0
 title_login:   db "press START to login", 0

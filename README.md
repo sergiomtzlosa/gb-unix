@@ -122,18 +122,22 @@ Notes:
 
 ## Building
 
-Requires [RGBDS](https://rgbds.gbdev.io/) (`rgbasm`, `rgblink`, `rgbfix`)
-and [SDCC](https://sdcc.sourceforge.net/) (`sdcc`) for the C module.
+The Makefile uses the prebuilt [RGBDS](https://rgbds.gbdev.io/) in
+`tools/rgbds/`, so `make` works without installing `rgbasm`/`rgblink`/`rgbfix`.
+[SDCC](https://sdcc.sourceforge.net/) (`sdcc`, 4.2+) is only needed to
+recompile the C module after editing `src/*.c`; if it is not installed, the
+build uses the checked-in `src/generated/shcmd_sdcc.asm`.
 
 ```sh
 make            # builds gb-unix.gb
 make clean      # remove build artifacts
+make shcmd      # regenerate src/generated/shcmd_sdcc.asm (needs SDCC)
 ```
 
-The C sources (`src/*.c`) are compiled by SDCC to RGBDS-syntax assembly
-(`--asm=rgbds --no-peep`) and assembled with `rgbasm`; C artifacts land in
-`build/`. `tools/rgbds/` contains a prebuilt RGBDS used by the Makefile;
-adjust `AS`/`CC`/`LD`/`FIX` in the Makefile if yours are on `$PATH`.
+When SDCC is available, the C sources (`src/*.c`) are compiled to
+RGBDS-syntax assembly (`--asm=rgbds --no-peep`) and assembled with `rgbasm`;
+C artifacts land in `build/`. Override `AS`/`CC`/`LD`/`FIX` in the Makefile
+(or `RGBDS_DIR`) to use system tools instead of the bundled ones.
 
 ## Running
 

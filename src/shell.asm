@@ -595,6 +595,11 @@ shell_update::
 	; execute
 	call sh_tokenize
 	call sh_exec
+	; a command may have left the shell (exit -> splash); do not redraw the
+	; shell input line over the title screen
+	ld a, [mode]
+	cp MODE_SHELL
+	ret nz
 	; save terminal cursor position before rendering input UI
 	ld a, [cur_row]
 	push af
@@ -1233,7 +1238,7 @@ h_motd::
 
 h_exit::
 	ld a, SCREEN_H - 1
-	ld [scr_bot], a     ; restore tty scroll region for browser/pager
+	ld [scr_bot], a     ; restore the full-screen scroll region
 	jp title_enter      ; exit = log out, back to the splash screen
 
 ; ---- data -------------------------------------------------------------

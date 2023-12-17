@@ -1,7 +1,6 @@
 ; fs.inc — filesystem node layout + error codes (shared)
 
 def N_TYPE       equ 0
-def N_NAME       equ 1
 def N_PARENT     equ 12
 def N_CHILD      equ 13
 def N_SIBLING    equ 14

@@ -93,9 +93,6 @@ kb_cell_addr::
 ; kb_clear_cell:: draw cursor key cell as normal char.
 kb_clear_cell::
 	call kb_cell_addr
-	xor a               ; will set below
-	ld [hl], a
-	; store actual char tile
 	push hl
 	ld a, [kb_row]
 	ld b, a

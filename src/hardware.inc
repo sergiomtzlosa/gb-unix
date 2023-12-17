@@ -2,9 +2,6 @@
 
 ; Memory-mapped I/O
 def rP1          equ $FF00 ; joypad
-def rSB          equ $FF01 ; serial data
-def rSC          equ $FF02 ; serial control
-def rDIV         equ $FF04
 def rNR10        equ $FF10 ; ch1 sweep
 def rNR11        equ $FF11 ; ch1 duty / length
 def rNR12        equ $FF12 ; ch1 envelope
@@ -22,17 +19,12 @@ def rNR50        equ $FF24 ; master volume / terminals
 def rNR51        equ $FF25 ; channel stereo routing
 def rNR52        equ $FF26 ; sound power
 def rLCDC        equ $FF40
-def rSTAT        equ $FF41
-def rSCY         equ $FF42
-def rSCX         equ $FF43
 def rLY          equ $FF44 ; LCD Y coordinate
 def rBGP         equ $FF47 ; BG palette
-def rIE          equ $FFFF ; interrupt enable
 
 ; LCDC bits
 def LCDC_ON      equ $80
 def LCDC_TILE8000 equ $10  ; BG tiles at $8000, unsigned
-def LCDC_MAP9800 equ $00   ; BG tilemap at $9800 (bit3 CLEAR selects $9800)
 def LCDC_BG_ON   equ $01
 
 ; Joypad bit masks (as returned by input_update in joy_held/joy_pressed)

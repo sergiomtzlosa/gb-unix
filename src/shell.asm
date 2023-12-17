@@ -843,7 +843,7 @@ h_ls::
 	; regular files: size in bytes
 	ld a, [fs_prev]
 	cp N_DIR
-	jr z, .size_done
+	jr z, .short
 	ld a, [fs_tmp2]
 	call fs_node_addr
 	ld bc, N_SIZE
@@ -859,7 +859,6 @@ h_ls::
 	call txt_putc
 	ld a, ' '
 	call txt_putc
-.size_done:
 .short:
 	pop hl
 	call txt_print_z
@@ -1237,8 +1236,6 @@ h_motd::
 	jr .m
 
 h_exit::
-	ld a, SCREEN_H - 1
-	ld [scr_bot], a     ; restore the full-screen scroll region
 	jp title_enter      ; exit = log out, back to the splash screen
 
 ; ---- data -------------------------------------------------------------
@@ -1317,7 +1314,6 @@ str_usage_mkdir:    db "usage: mkdir <dir>", 0
 str_usage_touch:    db "usage: touch <file>", 0
 str_usage_rm:       db "usage: rm|rmdir <path>", 0
 str_root_prompt:    db "/$ ", 0
-str_root_path:      db "/ (root)", 0
 str_prompt_tail:    db "$ ", 0
 str_whoami:         db "user", 0
 str_uname:          db "GB-UNIX 1.0.0 sm83", 0

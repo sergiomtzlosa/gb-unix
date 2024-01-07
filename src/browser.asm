@@ -92,15 +92,8 @@ browser_draw_entries::
 	jr c, .skip
 	jr z, .skip
 	ld a, c
-	ld d, 0
 	ld c, 0
 	call txt_goto
-	ld a, [list_offset]
-	ld e, a
-	ld a, [cur_row]
-	dec a
-	add e
-	ld e, a
 	ld d, 0
 	ld hl, list_entries
 	add hl, de

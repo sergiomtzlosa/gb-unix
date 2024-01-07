@@ -3,10 +3,6 @@
 ; Tiles are uploaded to VRAM tiles 190-249 by font.asm; logo_map
 ; is copied into screen_buf rows 0-2 by the title screen.
 
-def LOGO_TILE_BASE equ 190
-def LOGO_ROWS      equ 3
-def LOGO_TILES     equ 60
-
 section "logodata", rom0
 
 logotiles::

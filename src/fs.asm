@@ -22,7 +22,7 @@ fs_name_buf::   ds 12
 pwd_buf::
 _pwd_buf::      ds 24
 tmp_stack::     ds 16
-list_entries::  ds 96
+list_entries::  ds 16           ; fs_list never stores more than 16
 list_count::    db
 fread_src::     ds 2
 fread_rem::     ds 2
@@ -450,7 +450,7 @@ fs_read_open::
 	REPT N_ATTRS
 	inc hl
 	ENDR
-	ld a, [hl+]         ; attrs
+	inc hl              ; skip attrs
 	ld e, [hl]          ; data lo
 	inc hl
 	ld d, [hl]          ; data hi
@@ -625,12 +625,10 @@ fs_create::
 	ld a, $FF
 	ret
 
-; fs_delete:: remove file or empty dir from the tree.
-; in:  a = node
-; out: CF clear = ok, CF set = failed (fs_errno set)
-fs_write_new::   ; write content into a fresh SRAM file.
+; fs_write_new:: write content into a fresh SRAM file.
 ; in:  fs_tmp = node idx, hl = content zstr
 ; out: CF clear = ok, CF set = failed (fs_errno set)
+fs_write_new::
 	push hl
 	call strlen_hl
 	ld a, b
@@ -675,6 +673,9 @@ fs_write_new::   ; write content into a fresh SRAM file.
 	scf
 	ret
 
+; fs_delete:: remove file or empty dir from the tree.
+; in:  a = node
+; out: CF clear = ok, CF set = failed (fs_errno set)
 fs_delete::
 	ld [fs_tmp], a
 	or a

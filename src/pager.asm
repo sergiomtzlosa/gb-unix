@@ -121,7 +121,6 @@ pager_render::
 ; pager_update:: handle input.
 pager_update::
 	ld a, [joy_pressed]
-	ld a, [joy_pressed]
 	and J_UP
 	jp nz, .up
 	ld a, [joy_pressed]

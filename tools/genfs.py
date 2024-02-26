@@ -137,6 +137,22 @@ prints GB-UNIX 1.0.
 gbsh built-in.
 """
 
+BIN_GBEDIT = """gbedit - text editor
+
+run in gbsh:
+  gbedit note.txt
+
+A: type  B: delete
+B+A: newline
+B+dpad: text cursor
+START: save and quit
+SELECT: shift layer
+SELECT+START: quit
+
+creates the file if
+it does not exist.
+"""
+
 BIN_HELP = """help - list cmds.
 
 run in gbsh:
@@ -281,6 +297,7 @@ TREE = D("/", [
         F("clear", BIN_CLEAR),
         F("echo", BIN_ECHO),
         F("exit", BIN_EXIT),
+        F("gbedit", BIN_GBEDIT),
         F("help", BIN_HELP),
         F("ls", BIN_LS),
         F("mkdir", BIN_MKDIR),
@@ -406,7 +423,7 @@ def main():
         out.append('    ; free inodes')
         out.append('    ds %d * %d, $00' % (NODE_COUNT - len(nodes), 20))
 
-    out += ['', 'section "fsblobs", rom0', '']
+    out += ['', 'section "fsblobs", romx, bank[1]', '']
     for label, content in blobs:
         out.append('%s::' % label)
         if content:

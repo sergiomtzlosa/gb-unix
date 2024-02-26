@@ -127,6 +127,52 @@ kb_reset::
 	ld [shift_on], a
 	ret
 
+; ---- keyboard cursor movement (shared by shell + editor) --------------
+
+kb_move_up::
+	call kb_clear_cell
+	ld a, [kb_row]
+	or a
+	jr nz, .u
+	ld a, KB_ROWS
+.u:
+	dec a
+	ld [kb_row], a
+	jp kb_draw_cell
+
+kb_move_down::
+	call kb_clear_cell
+	ld a, [kb_row]
+	inc a
+	cp KB_ROWS
+	jr c, .d
+	xor a
+.d:
+	ld [kb_row], a
+	jp kb_draw_cell
+
+kb_move_left::
+	call kb_clear_cell
+	ld a, [kb_col]
+	or a
+	jr nz, .l
+	ld a, KB_COLS
+.l:
+	dec a
+	ld [kb_col], a
+	jp kb_draw_cell
+
+kb_move_right::
+	call kb_clear_cell
+	ld a, [kb_col]
+	inc a
+	cp KB_COLS
+	jr c, .r
+	xor a
+.r:
+	ld [kb_col], a
+	jp kb_draw_cell
+
 ; shell_render_kb:: draw all 6 keyboard rows.
 shell_render_kb::
 	ld b, 0             ; kb row

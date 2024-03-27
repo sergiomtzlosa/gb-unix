@@ -8,7 +8,7 @@ fs_rom_nodes::
     db 2, "/", $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, 255, 1, -1, $00
     dw $0000, $0000
     ; 1: /bin
-    db 2, "bin", $00, $00, $00, $00, $00, $00, $00, $00, 0, 2, 18, $00
+    db 2, "bin", $00, $00, $00, $00, $00, $00, $00, $00, 0, 2, 19, $00
     dw $0000, $0000
     ; 2: /bin/cat
     db 1, "cat", $00, $00, $00, $00, $00, $00, $00, $00, 1, -1, 3, $00
@@ -25,127 +25,130 @@ fs_rom_nodes::
     ; 6: /bin/exit
     db 1, "exit", $00, $00, $00, $00, $00, $00, $00, 1, -1, 7, $00
     dw blob_bin_exit, blob_bin_exit_end - blob_bin_exit
-    ; 7: /bin/help
-    db 1, "help", $00, $00, $00, $00, $00, $00, $00, 1, -1, 8, $00
+    ; 7: /bin/gbedit
+    db 1, "gbedit", $00, $00, $00, $00, $00, 1, -1, 8, $00
+    dw blob_bin_gbedit, blob_bin_gbedit_end - blob_bin_gbedit
+    ; 8: /bin/help
+    db 1, "help", $00, $00, $00, $00, $00, $00, $00, 1, -1, 9, $00
     dw blob_bin_help, blob_bin_help_end - blob_bin_help
-    ; 8: /bin/ls
-    db 1, "ls", $00, $00, $00, $00, $00, $00, $00, $00, $00, 1, -1, 9, $00
+    ; 9: /bin/ls
+    db 1, "ls", $00, $00, $00, $00, $00, $00, $00, $00, $00, 1, -1, 10, $00
     dw blob_bin_ls, blob_bin_ls_end - blob_bin_ls
-    ; 9: /bin/mkdir
-    db 1, "mkdir", $00, $00, $00, $00, $00, $00, 1, -1, 10, $00
+    ; 10: /bin/mkdir
+    db 1, "mkdir", $00, $00, $00, $00, $00, $00, 1, -1, 11, $00
     dw blob_bin_mkdir, blob_bin_mkdir_end - blob_bin_mkdir
-    ; 10: /bin/pwd
-    db 1, "pwd", $00, $00, $00, $00, $00, $00, $00, $00, 1, -1, 11, $00
+    ; 11: /bin/pwd
+    db 1, "pwd", $00, $00, $00, $00, $00, $00, $00, $00, 1, -1, 12, $00
     dw blob_bin_pwd, blob_bin_pwd_end - blob_bin_pwd
-    ; 11: /bin/rm
-    db 1, "rm", $00, $00, $00, $00, $00, $00, $00, $00, $00, 1, -1, 12, $00
+    ; 12: /bin/rm
+    db 1, "rm", $00, $00, $00, $00, $00, $00, $00, $00, $00, 1, -1, 13, $00
     dw blob_bin_rm, blob_bin_rm_end - blob_bin_rm
-    ; 12: /bin/rmdir
-    db 1, "rmdir", $00, $00, $00, $00, $00, $00, 1, -1, 13, $00
+    ; 13: /bin/rmdir
+    db 1, "rmdir", $00, $00, $00, $00, $00, $00, 1, -1, 14, $00
     dw blob_bin_rmdir, blob_bin_rmdir_end - blob_bin_rmdir
-    ; 13: /bin/sh
-    db 1, "sh", $00, $00, $00, $00, $00, $00, $00, $00, $00, 1, -1, 14, $00
+    ; 14: /bin/sh
+    db 1, "sh", $00, $00, $00, $00, $00, $00, $00, $00, $00, 1, -1, 15, $00
     dw blob_bin_sh, blob_bin_sh_end - blob_bin_sh
-    ; 14: /bin/touch
-    db 1, "touch", $00, $00, $00, $00, $00, $00, 1, -1, 15, $00
+    ; 15: /bin/touch
+    db 1, "touch", $00, $00, $00, $00, $00, $00, 1, -1, 16, $00
     dw blob_bin_touch, blob_bin_touch_end - blob_bin_touch
-    ; 15: /bin/uname
-    db 1, "uname", $00, $00, $00, $00, $00, $00, 1, -1, 16, $00
+    ; 16: /bin/uname
+    db 1, "uname", $00, $00, $00, $00, $00, $00, 1, -1, 17, $00
     dw blob_bin_uname, blob_bin_uname_end - blob_bin_uname
-    ; 16: /bin/uptime
-    db 1, "uptime", $00, $00, $00, $00, $00, 1, -1, 17, $00
+    ; 17: /bin/uptime
+    db 1, "uptime", $00, $00, $00, $00, $00, 1, -1, 18, $00
     dw blob_bin_uptime, blob_bin_uptime_end - blob_bin_uptime
-    ; 17: /bin/whoami
+    ; 18: /bin/whoami
     db 1, "whoami", $00, $00, $00, $00, $00, 1, -1, -1, $00
     dw blob_bin_whoami, blob_bin_whoami_end - blob_bin_whoami
-    ; 18: /dev
-    db 2, "dev", $00, $00, $00, $00, $00, $00, $00, $00, 0, 19, 22, $00
+    ; 19: /dev
+    db 2, "dev", $00, $00, $00, $00, $00, $00, $00, $00, 0, 20, 23, $00
     dw $0000, $0000
-    ; 19: /dev/null
-    db 1, "null", $00, $00, $00, $00, $00, $00, $00, 18, -1, 20, $00
+    ; 20: /dev/null
+    db 1, "null", $00, $00, $00, $00, $00, $00, $00, 19, -1, 21, $00
     dw blob_dev_null, blob_dev_null_end - blob_dev_null
-    ; 20: /dev/random
-    db 1, "random", $00, $00, $00, $00, $00, 18, -1, 21, $00
+    ; 21: /dev/random
+    db 1, "random", $00, $00, $00, $00, $00, 19, -1, 22, $00
     dw blob_dev_random, blob_dev_random_end - blob_dev_random
-    ; 21: /dev/tty0
-    db 1, "tty0", $00, $00, $00, $00, $00, $00, $00, 18, -1, -1, $00
+    ; 22: /dev/tty0
+    db 1, "tty0", $00, $00, $00, $00, $00, $00, $00, 19, -1, -1, $00
     dw blob_dev_tty0, blob_dev_tty0_end - blob_dev_tty0
-    ; 22: /etc
-    db 2, "etc", $00, $00, $00, $00, $00, $00, $00, $00, 0, 23, 26, $00
+    ; 23: /etc
+    db 2, "etc", $00, $00, $00, $00, $00, $00, $00, $00, 0, 24, 27, $00
     dw $0000, $0000
-    ; 23: /etc/motd
-    db 1, "motd", $00, $00, $00, $00, $00, $00, $00, 22, -1, 24, $00
+    ; 24: /etc/motd
+    db 1, "motd", $00, $00, $00, $00, $00, $00, $00, 23, -1, 25, $00
     dw blob_etc_motd, blob_etc_motd_end - blob_etc_motd
-    ; 24: /etc/hostname
-    db 1, "hostname", $00, $00, $00, 22, -1, 25, $00
+    ; 25: /etc/hostname
+    db 1, "hostname", $00, $00, $00, 23, -1, 26, $00
     dw blob_etc_hostname, blob_etc_hostname_end - blob_etc_hostname
-    ; 25: /etc/passwd
-    db 1, "passwd", $00, $00, $00, $00, $00, 22, -1, -1, $00
+    ; 26: /etc/passwd
+    db 1, "passwd", $00, $00, $00, $00, $00, 23, -1, -1, $00
     dw blob_etc_passwd, blob_etc_passwd_end - blob_etc_passwd
-    ; 26: /home
-    db 2, "home", $00, $00, $00, $00, $00, $00, $00, 0, 27, 33, $00
+    ; 27: /home
+    db 2, "home", $00, $00, $00, $00, $00, $00, $00, 0, 28, 34, $00
     dw $0000, $0000
-    ; 27: /home/user
-    db 2, "user", $00, $00, $00, $00, $00, $00, $00, 26, 28, -1, $00
+    ; 28: /home/user
+    db 2, "user", $00, $00, $00, $00, $00, $00, $00, 27, 29, -1, $00
     dw $0000, $0000
-    ; 28: /home/user/readme.txt
-    db 1, "readme.txt", $00, 27, -1, 29, $00
+    ; 29: /home/user/readme.txt
+    db 1, "readme.txt", $00, 28, -1, 30, $00
     dw blob_home_user_readme_txt, blob_home_user_readme_txt_end - blob_home_user_readme_txt
-    ; 29: /home/user/todo.txt
-    db 1, "todo.txt", $00, $00, $00, 27, -1, 30, $00
+    ; 30: /home/user/todo.txt
+    db 1, "todo.txt", $00, $00, $00, 28, -1, 31, $00
     dw blob_home_user_todo_txt, blob_home_user_todo_txt_end - blob_home_user_todo_txt
-    ; 30: /home/user/.secret
-    db 1, ".secret", $00, $00, $00, $00, 27, -1, 31, $00
+    ; 31: /home/user/.secret
+    db 1, ".secret", $00, $00, $00, $00, 28, -1, 32, $00
     dw blob_home_user__secret, blob_home_user__secret_end - blob_home_user__secret
-    ; 31: /home/user/notes
-    db 2, "notes", $00, $00, $00, $00, $00, $00, 27, 32, -1, $00
+    ; 32: /home/user/notes
+    db 2, "notes", $00, $00, $00, $00, $00, $00, 28, 33, -1, $00
     dw $0000, $0000
-    ; 32: /home/user/notes/ideas.txt
-    db 1, "ideas.txt", $00, $00, 31, -1, -1, $00
+    ; 33: /home/user/notes/ideas.txt
+    db 1, "ideas.txt", $00, $00, 32, -1, -1, $00
     dw blob_home_user_notes_ideas_txt, blob_home_user_notes_ideas_txt_end - blob_home_user_notes_ideas_txt
-    ; 33: /proc
-    db 2, "proc", $00, $00, $00, $00, $00, $00, $00, 0, 34, 37, $00
+    ; 34: /proc
+    db 2, "proc", $00, $00, $00, $00, $00, $00, $00, 0, 35, 38, $00
     dw $0000, $0000
-    ; 34: /proc/cpuinfo
-    db 1, "cpuinfo", $00, $00, $00, $00, 33, -1, 35, $00
+    ; 35: /proc/cpuinfo
+    db 1, "cpuinfo", $00, $00, $00, $00, 34, -1, 36, $00
     dw blob_proc_cpuinfo, blob_proc_cpuinfo_end - blob_proc_cpuinfo
-    ; 35: /proc/meminfo
-    db 1, "meminfo", $00, $00, $00, $00, 33, -1, 36, $00
+    ; 36: /proc/meminfo
+    db 1, "meminfo", $00, $00, $00, $00, 34, -1, 37, $00
     dw blob_proc_meminfo, blob_proc_meminfo_end - blob_proc_meminfo
-    ; 36: /proc/version
-    db 1, "version", $00, $00, $00, $00, 33, -1, -1, $00
+    ; 37: /proc/version
+    db 1, "version", $00, $00, $00, $00, 34, -1, -1, $00
     dw blob_proc_version, blob_proc_version_end - blob_proc_version
-    ; 37: /tmp
-    db 2, "tmp", $00, $00, $00, $00, $00, $00, $00, $00, 0, -1, 38, $00
+    ; 38: /tmp
+    db 2, "tmp", $00, $00, $00, $00, $00, $00, $00, $00, 0, -1, 39, $00
     dw $0000, $0000
-    ; 38: /usr
-    db 2, "usr", $00, $00, $00, $00, $00, $00, $00, $00, 0, 39, 43, $00
+    ; 39: /usr
+    db 2, "usr", $00, $00, $00, $00, $00, $00, $00, $00, 0, 40, 44, $00
     dw $0000, $0000
-    ; 39: /usr/share
-    db 2, "share", $00, $00, $00, $00, $00, $00, 38, 40, -1, $00
+    ; 40: /usr/share
+    db 2, "share", $00, $00, $00, $00, $00, $00, 39, 41, -1, $00
     dw $0000, $0000
-    ; 40: /usr/share/man
-    db 2, "man", $00, $00, $00, $00, $00, $00, $00, $00, 39, 41, -1, $00
+    ; 41: /usr/share/man
+    db 2, "man", $00, $00, $00, $00, $00, $00, $00, $00, 40, 42, -1, $00
     dw $0000, $0000
-    ; 41: /usr/share/man/man1
-    db 2, "man1", $00, $00, $00, $00, $00, $00, $00, 40, 42, -1, $00
+    ; 42: /usr/share/man/man1
+    db 2, "man1", $00, $00, $00, $00, $00, $00, $00, 41, 43, -1, $00
     dw $0000, $0000
-    ; 42: /usr/share/man/man1/ls.1
-    db 1, "ls.1", $00, $00, $00, $00, $00, $00, $00, 41, -1, -1, $00
+    ; 43: /usr/share/man/man1/ls.1
+    db 1, "ls.1", $00, $00, $00, $00, $00, $00, $00, 42, -1, -1, $00
     dw blob_usr_share_man_man1_ls_1, blob_usr_share_man_man1_ls_1_end - blob_usr_share_man_man1_ls_1
-    ; 43: /var
-    db 2, "var", $00, $00, $00, $00, $00, $00, $00, $00, 0, 44, -1, $00
+    ; 44: /var
+    db 2, "var", $00, $00, $00, $00, $00, $00, $00, $00, 0, 45, -1, $00
     dw $0000, $0000
-    ; 44: /var/log
-    db 2, "log", $00, $00, $00, $00, $00, $00, $00, $00, 43, 45, -1, $00
+    ; 45: /var/log
+    db 2, "log", $00, $00, $00, $00, $00, $00, $00, $00, 44, 46, -1, $00
     dw $0000, $0000
-    ; 45: /var/log/messages
-    db 1, "messages", $00, $00, $00, 44, -1, -1, $00
+    ; 46: /var/log/messages
+    db 1, "messages", $00, $00, $00, 45, -1, -1, $00
     dw blob_var_log_messages, blob_var_log_messages_end - blob_var_log_messages
     ; free inodes
-    ds 50 * 20, $00
+    ds 49 * 20, $00
 
-section "fsblobs", rom0
+section "fsblobs", romx, bank[1]
 
 blob_bin_cat::
     db $63, $61, $74, $20, $2D, $20, $70, $72, $69, $6E, $74, $20, $66, $69, $6C, $65
@@ -187,6 +190,22 @@ blob_bin_exit::
     db $63, $74, $2B, $53, $74, $61, $72, $74, $2E, $0A, $0A, $67, $62, $73, $68, $20
     db $62, $75, $69, $6C, $74, $2D, $69, $6E, $2E, $0A
 blob_bin_exit_end::
+
+blob_bin_gbedit::
+    db $67, $62, $65, $64, $69, $74, $20, $2D, $20, $74, $65, $78, $74, $20, $65, $64
+    db $69, $74, $6F, $72, $0A, $0A, $72, $75, $6E, $20, $69, $6E, $20, $67, $62, $73
+    db $68, $3A, $0A, $20, $20, $67, $62, $65, $64, $69, $74, $20, $6E, $6F, $74, $65
+    db $2E, $74, $78, $74, $0A, $0A, $41, $3A, $20, $74, $79, $70, $65, $20, $20, $42
+    db $3A, $20, $64, $65, $6C, $65, $74, $65, $0A, $42, $2B, $41, $3A, $20, $6E, $65
+    db $77, $6C, $69, $6E, $65, $0A, $42, $2B, $64, $70, $61, $64, $3A, $20, $74, $65
+    db $78, $74, $20, $63, $75, $72, $73, $6F, $72, $0A, $53, $54, $41, $52, $54, $3A
+    db $20, $73, $61, $76, $65, $20, $61, $6E, $64, $20, $71, $75, $69, $74, $0A, $53
+    db $45, $4C, $45, $43, $54, $3A, $20, $73, $68, $69, $66, $74, $20, $6C, $61, $79
+    db $65, $72, $0A, $53, $45, $4C, $45, $43, $54, $2B, $53, $54, $41, $52, $54, $3A
+    db $20, $71, $75, $69, $74, $0A, $0A, $63, $72, $65, $61, $74, $65, $73, $20, $74
+    db $68, $65, $20, $66, $69, $6C, $65, $20, $69, $66, $0A, $69, $74, $20, $64, $6F
+    db $65, $73, $20, $6E, $6F, $74, $20, $65, $78, $69, $73, $74, $2E, $0A
+blob_bin_gbedit_end::
 
 blob_bin_help::
     db $68, $65, $6C, $70, $20, $2D, $20, $6C, $69, $73, $74, $20, $63, $6D, $64, $73

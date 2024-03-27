@@ -15,17 +15,19 @@ MBC1 with 8 KB battery-backed RAM (cart type `0x03`).
 
 ## Controls
 
-| Key | Browser mode | Shell mode | File pager |
-|---|---|---|---|
-| **D-Pad Up/Down** | Move cursor in listing | Move on on-screen keyboard | Scroll 1 line |
-| **D-Pad Left/Right** | Page up/down | Move on keyboard (wraps) | Page up/down |
-| **A** | Enter dir / open file | Type character | Close |
-| **B** | `cd ..` (parent dir) | Backspace | Close |
-| **B + Up** | Jump to `/` | — | — |
-| **B + Down** | Jump to `/home/user` | — | — |
-| **Start** | Enter shell (`gbsh`) | Execute command | Close |
-| **Select** | Toggle long listing (`drwxr-xr-x`) | Toggle shift layer (caps/symbols) | — |
-| **Select + Start** | Key help | Leave shell (back to browser) | — |
+| Key | Browser mode | Shell mode | File pager | Text editor (`gbedit`) |
+|---|---|---|---|---|
+| **D-Pad Up/Down** | Move cursor in listing | Move on on-screen keyboard | Scroll 1 line | Move on keyboard |
+| **D-Pad Left/Right** | Page up/down | Move on keyboard (wraps) | Page up/down | Move on keyboard (wraps) |
+| **A** | Enter dir / open file | Type character | Close | Insert selected character |
+| **B** | `cd ..` (parent dir) | Backspace | Close | Backspace (joins lines at column 0) |
+| **B + Up** | Jump to `/` | — | — | Move text cursor up |
+| **B + Down** | Jump to `/home/user` | — | — | Move text cursor down |
+| **B + Left/Right** | — | — | — | Move text cursor left/right |
+| **B + A** | — | — | — | Insert newline |
+| **Start** | Enter shell (`gbsh`) | Execute command | Close | Save file and quit |
+| **Select** | Toggle long listing (`drwxr-xr-x`) | Toggle shift layer (caps/symbols) | — | Toggle shift layer |
+| **Select + Start** | Key help | Leave shell (back to browser) | — | Quit without saving |
 
 On the title screen, **Start** or **A** logs in and **Select** opens the key
 help. A tiny pixel-art Tux + `GB-UNIX` logo tops the splash, and an 8-bit
@@ -46,7 +48,10 @@ chiptune jingle (pulse melody + bass + noise hat) loops here only.
    `/home/user$`; deep paths fall back to their basename), an input line, and
    a 6×10 QWERTY-ish on-screen keyboard (lowercase letters, digits, symbols
    via the shift layer).
-5. **Key help** — a full-screen table of every control, opened with Select on
+5. **Text editor (`gbedit`)** — a full-screen editor with a 9-line text view,
+   horizontal scrolling for long lines, and the same on-screen keyboard.
+   Start saves and quits; Select+Start quits without saving.
+6. **Key help** — a full-screen table of every control, opened with Select on
    the title screen or Select+Start in the browser; any key returns.
 
 ## Shell commands
@@ -65,6 +70,7 @@ chiptune jingle (pulse melody + bass + noise hat) loops here only.
 | `rmdir DIR` | Remove an empty directory |
 | `rm FILE` | Remove a file |
 | `touch FILE` | Create an empty file (no-op if it already exists) |
+| `gbedit FILE` | Open `FILE` in the text editor; creates it when missing |
 | `clear` | Clear the terminal |
 | `whoami` | Print the current user |
 | `uname` | Print the system name |
@@ -83,15 +89,20 @@ Notes:
   `rmdir /tmp` or `echo x > /etc/hostname` fail with
   `error: operation not permitted`. Files and directories you create are
   yours to change.
+- `gbedit file` edits SRAM files only; the immutable ROM files (`/etc/motd`,
+  `/home/user/readme.txt`, ...) return `error: operation not permitted`.
+  The buffer holds 2047 bytes; long lines scroll horizontally. Start saves,
+  Select+Start discards changes.
 - `echo hello > file` writes `hello\n` into `file` (output redirection).
 - `cat` reads both the read-only system files (from ROM) and files you created
   (from SRAM); several files can be given, and directories or missing files
   print an error.
 - Every built-in has a file in `/bin` (`cat`, `cd`, `clear`, `echo`, `exit`,
-  `help`, `ls`, `mkdir`, `pwd`, `rm`, `rmdir`, `sh`, `touch`, `uname`,
-  `uptime`, `whoami`) holding a short man-page-style note — `cat /bin/pwd`
-  explains `pwd` and how to run it. They are documentation, not separate
-  programs (gbsh is a built-in shell), but you can still run them by path:
+  `gbedit`, `help`, `ls`, `mkdir`, `pwd`, `rm`, `rmdir`, `sh`, `touch`,
+  `uname`, `uptime`, `whoami`) holding a short man-page-style note —
+  `cat /bin/pwd` explains `pwd` and how to run it. They are documentation,
+  not separate programs (gbsh is a built-in shell), but you can still run
+  them by path:
   `/bin/pwd`, `bin/echo hi` and `./pwd` all invoke the built-in named after
   the last path component, so the files in `/bin` are not just decoration.
 - Paths may be absolute (`/etc/motd`) or relative (`motd`, `../etc/motd`).
@@ -147,7 +158,9 @@ or flash it to hardware. Try:
 1. START → browser. Move around the root tree, SELECT for the long listing.
 2. A on a directory to enter it, B to go back up, A on a file to page it.
 3. START → shell. Type `help` on the keyboard, START to run.
-4. `mkdir demo` / `touch note` / `echo hi > note` — then power-cycle the
+4. `gbedit note` — type a few lines (B+A makes a newline), START to save and
+   quit, then `cat note` to read it back.
+5. `mkdir demo` / `touch note` / `echo hi > note` — then power-cycle the
    emulator: your files are still there.
 
 ## Project layout
@@ -169,6 +182,7 @@ gb-unix/
     ├── sram.asm        — SRAM enable, init/format, inode alloc, content heap
     ├── browser.asm     — browser UI
     ├── pager.asm       — file viewer
+    ├── editor.asm      — gbedit text editor
     ├── shell.asm       — tokenizer, command table, executors, tty
     ├── music.asm       — splash-screen chiptune sequencer + song data
     ├── shcmd.c         — C: pwd/echo output (SDCC → RGBDS asm, see cwrite.asm)
@@ -189,5 +203,5 @@ gb-unix/
 ## Status
 
 Complete: boot/title, browser (short + long listing), pager, shell with
-on-screen keyboard, full command set, SRAM persistence of
-`mkdir`/`touch`/`rm`/`rmdir`/redirection across power cycles.
+on-screen keyboard, full command set, `gbedit` text editor, SRAM persistence
+of `mkdir`/`touch`/`rm`/`rmdir`/redirection/edited files across power cycles.

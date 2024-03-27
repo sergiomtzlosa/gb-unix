@@ -20,5 +20,6 @@ def FS_E_EXISTS  equ 5
 def FS_E_FULL    equ 6
 def FS_E_NAMETOOLONG equ 7
 def FS_E_EPERM   equ 8
+def FS_E_TOOBIG  equ 9
 
-def FS_VERSION   equ 3
+def FS_VERSION   equ 4

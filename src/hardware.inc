@@ -43,6 +43,7 @@ def MODE_SHELL   equ 1
 def MODE_PAGER   equ 2
 def MODE_TITLE   equ 3
 def MODE_HELP    equ 4
+def MODE_EDITOR  equ 5
 
 ; On-screen keyboard dimensions (shared with shell input handling)
 def KB_ROWS      equ 6

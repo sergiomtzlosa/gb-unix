@@ -463,49 +463,13 @@ shell_update::
 	jp nz, .key_select
 	ret
 .kb_up:
-	call kb_clear_cell
-	ld a, [kb_row]
-	or a
-	jr nz, .u
-	ld a, KB_ROWS
-.u:
-	dec a
-	ld [kb_row], a
-	call kb_draw_cell
-	ret
+	jp kb_move_up
 .kb_down:
-	call kb_clear_cell
-	ld a, [kb_row]
-	inc a
-	cp KB_ROWS
-	jr c, .d
-	xor a
-.d:
-	ld [kb_row], a
-	call kb_draw_cell
-	ret
+	jp kb_move_down
 .kb_left:
-	call kb_clear_cell
-	ld a, [kb_col]
-	or a
-	jr nz, .l
-	ld a, KB_COLS
-.l:
-	dec a
-	ld [kb_col], a
-	call kb_draw_cell
-	ret
+	jp kb_move_left
 .kb_right:
-	call kb_clear_cell
-	ld a, [kb_col]
-	inc a
-	cp KB_COLS
-	jr c, .r
-	xor a
-.r:
-	ld [kb_col], a
-	call kb_draw_cell
-	ret
+	jp kb_move_right
 .key_a:
 	ld a, [kb_row]
 	ld b, a
@@ -1065,6 +1029,50 @@ h_mkdir::
 	call txt_putc
 	ret
 
+h_gbedit::
+	ld a, [sh_argc]
+	cp 2
+	jr c, .usage
+	ld a, 1
+	call sh_arg_de
+	call fs_resolve
+	cp $FF
+	jr nz, .have
+	ld a, [fs_errno]
+	cp FS_E_NOENT
+	jp nz, sh_err_print
+	; create an empty file on first edit
+	ld a, 1
+	call sh_arg_de
+	ld b, N_FILE
+	ld hl, $0000
+	call sh_create_path
+	jp c, sh_err_print
+	ld a, 1
+	call sh_arg_de
+	call fs_resolve
+	cp $FF
+	jp z, sh_err_print
+.have:
+	ld [fs_tmp], a
+	call fs_node_addr
+	ld a, [hl]
+	cp N_FILE
+	jr z, .edit
+	ld a, FS_E_ISDIR
+	ld [fs_errno], a
+	jp sh_err_print
+.edit:
+	ld a, [fs_tmp]
+	call editor_enter
+	jp c, sh_err_print
+	ret
+.usage:
+	ld hl, str_usage_gbedit
+	call txt_print_z
+	ld a, $0A
+	jp txt_putc
+
 h_touch::
 	ld a, [sh_argc]
 	cp 2
@@ -1257,6 +1265,7 @@ sh_cmds:
 	dw cmd_pwd, h_pwd
 	dw cmd_cat, h_cat
 	dw cmd_echo, h_echo
+	dw cmd_gbedit, h_gbedit
 	dw cmd_mkdir, h_mkdir
 	dw cmd_rmdir, h_rmdir
 	dw cmd_rm, h_rm
@@ -1275,6 +1284,7 @@ cmd_cd:     db "cd", 0
 cmd_pwd:    db "pwd", 0
 cmd_cat:    db "cat", 0
 cmd_echo:   db "echo", 0
+cmd_gbedit: db "gbedit", 0
 cmd_mkdir:  db "mkdir", 0
 cmd_rmdir:  db "rmdir", 0
 cmd_rm:     db "rm", 0
@@ -1289,10 +1299,10 @@ cmd_exit:   db "exit", 0
 txt_help:
 	db "commands:", $0A
 	db " help ls cd pwd cat", $0A
-	db " echo mkdir rmdir", $0A
-	db " rm touch clear", $0A
-	db " whoami uname", $0A
-	db " uptime motd exit", $0A
+	db " gbedit echo mkdir", $0A
+	db " rmdir rm touch", $0A
+	db " whoami uname uptime", $0A
+	db " clear motd exit", $0A
 	db "A type  B backspace", $0A
 	db "START run", $0A
 	db "SELECT shift", $0A
@@ -1312,6 +1322,7 @@ str_removed:        db "removed ", 0
 str_wrote:          db "wrote ", 0
 str_usage_mkdir:    db "usage: mkdir <dir>", 0
 str_usage_touch:    db "usage: touch <file>", 0
+str_usage_gbedit:   db "usage: gbedit <file>", 0
 str_usage_rm:       db "usage: rm|rmdir <path>", 0
 str_root_prompt:    db "/$ ", 0
 str_prompt_tail:    db "$ ", 0

@@ -163,6 +163,8 @@ main_loop::
 	jr z, .title
 	cp MODE_HELP
 	jr z, .help
+	cp MODE_EDITOR
+	jr z, .editor
 	jr main_loop
 .browser:
 	call browser_update
@@ -178,6 +180,9 @@ main_loop::
 	jr main_loop
 .help:
 	call help_update
+	jr main_loop
+.editor:
+	call editor_update
 	jr main_loop
 
 ; wait_vblank:: busy-wait for VBlank; blit dirty rows; wait for frame end.

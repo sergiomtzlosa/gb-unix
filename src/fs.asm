@@ -811,6 +811,7 @@ fs_err_str::
 .table:
 	dw .m_noent, .m_notdir, .m_isdir, .m_notempty
 	dw .m_exists, .m_full, .m_nametoolong, .m_eperm
+	dw .m_toobig
 .m_noent:        db "no such file or directory", 0
 .m_notdir:       db "not a directory", 0
 .m_isdir:        db "is a directory", 0
@@ -819,3 +820,4 @@ fs_err_str::
 .m_full:         db "no space left on device", 0
 .m_nametoolong:  db "name too long", 0
 .m_eperm:        db "operation not permitted", 0
+.m_toobig:       db "file too large", 0

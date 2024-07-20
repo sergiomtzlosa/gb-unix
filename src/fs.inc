@@ -1,4 +1,4 @@
-; fs.inc — filesystem node layout + error codes (shared)
+; fs.inc — filesystem node/SRAM layout + error codes (shared)
 
 def N_TYPE       equ 0
 def N_PARENT     equ 12
@@ -22,4 +22,14 @@ def FS_E_NAMETOOLONG equ 7
 def FS_E_EPERM   equ 8
 def FS_E_TOOBIG  equ 9
 
-def FS_VERSION   equ 4
+; SRAM filesystem layout (shared by sram.asm, fs.asm, and top.asm)
+def SRAM_MAGIC    equ $A000
+def SRAM_VER      equ $A004
+def SRAM_HEAP_PTR equ $A006
+def SRAM_NODES    equ $A010
+def NODE_SIZE     equ 20
+def NODE_COUNT    equ 96
+def NODE_HEAP     equ $A010 + NODE_COUNT * NODE_SIZE ; $A790
+def HEAP_END      equ $BFF0
+
+def FS_VERSION   equ 5

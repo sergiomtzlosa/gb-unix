@@ -5,6 +5,8 @@ include "fs.inc"
 
 def SH_INPUT_MAX equ 30
 def TERM_BOT     equ 10          ; last terminal row (input line is row 11)
+def SH_HIST_MAX  equ 8           ; commands kept in shell history
+def SH_HIST_SLOT equ 32          ; bytes per history entry (30 chars + NUL)
 
 section "shellw2", wram0
 
@@ -20,10 +22,27 @@ sh_used::       db              ; 1 once a character has been typed
 sh_promptbuf::  ds 14
 echo_buf::      ds 34
 ls_long::       db              ; h_ls -l flag (scratch)
+sh_hist::       ds SH_HIST_MAX * SH_HIST_SLOT
+sh_hist_draft:: ds SH_INPUT_MAX + 2
+sh_hist_count:: db
+sh_hist_pos::   db
+sh_sel_armed::  db
+sh_sel_combo::  db
 
 section "shell", rom0
 
 ; ---- entry / rendering ------------------------------------------------
+
+; shell_init:: clear shell history. Called once at boot; shell_enter keeps it.
+shell_init::
+	xor a
+	ld [sh_hist_count], a
+	ld [sh_hist_pos], a
+	ld [sh_hist_draft], a
+	ld [sh_sel_armed], a
+	ld [sh_sel_combo], a
+	ld [sh_input], a
+	ret
 
 shell_enter::
 	ld a, MODE_SHELL
@@ -33,6 +52,13 @@ shell_enter::
 	xor a
 	ld [scr_top], a
 	ld [sh_len], a      ; clear input length FIRST (a is clobbered below)
+	; start at the "new input" position and keep the saved history entries
+	ld a, [sh_hist_count]
+	ld [sh_hist_pos], a
+	xor a
+	ld [sh_hist_draft], a
+	ld [sh_sel_armed], a
+	ld [sh_sel_combo], a
 	ld a, TERM_BOT
 	ld [scr_bot], a
 	xor a
@@ -425,47 +451,256 @@ sh_err_print::
 	pop af
 	ret
 
+; ---- command history --------------------------------------------------
+
+; sh_hist_slot:: a = entry index -> hl = entry buffer.
+sh_hist_slot:
+	ld l, a
+	ld h, 0
+	add hl, hl          ; x2
+	add hl, hl          ; x4
+	add hl, hl          ; x8
+	add hl, hl          ; x16
+	add hl, hl          ; x32
+	ld de, sh_hist
+	add hl, de
+	ret
+
+; sh_copy_z:: copy zstring hl -> de (including terminator).
+sh_copy_z:
+	ld a, [hl+]
+	ld [de], a
+	inc de
+	or a
+	jr nz, sh_copy_z
+	ret
+
+; sh_hist_load:: hl = history zstring -> input line, then redraw it.
+sh_hist_load:
+	ld de, sh_input
+	ld b, 0
+.loop:
+	ld a, [hl+]
+	ld [de], a
+	inc de
+	or a
+	jr z, .done
+	inc b
+	jr .loop
+.done:
+	ld a, b
+	ld [sh_len], a
+	ld a, 1
+	ld [sh_used], a
+	jp shell_render_input
+
+; sh_hist_save_draft:: preserve the line being edited before recalling history.
+; Copy exactly sh_len bytes: sh_input may still hold stale bytes after a command.
+sh_hist_save_draft:
+	ld a, [sh_len]
+	ld b, a
+	ld hl, sh_input
+	ld de, sh_hist_draft
+	or a
+	jr z, .done
+.copy:
+	ld a, [hl+]
+	ld [de], a
+	inc de
+	dec b
+	jr nz, .copy
+.done:
+	xor a
+	ld [de], a
+	ret
+
+; sh_hist_reset:: editing starts a new line; leave recall mode.
+sh_hist_reset:
+	ld a, [sh_hist_count]
+	ld [sh_hist_pos], a
+	xor a
+	ld [sh_hist_draft], a
+	ret
+
+; sh_hist_add:: append sh_input to history, skipping a duplicate last entry.
+sh_hist_add:
+	ld a, [sh_len]
+	or a
+	ret z
+	ld a, [sh_hist_count]
+	or a
+	jr z, .add
+	dec a
+	call sh_hist_slot
+	ld de, sh_input
+	call strcmp_z
+	jr z, .reset
+.add:
+	ld a, [sh_hist_count]
+	cp SH_HIST_MAX
+	jr c, .room
+	; full: drop the oldest entry by moving slots 1..7 down to 0..6
+	ld hl, sh_hist + SH_HIST_SLOT
+	ld de, sh_hist
+	ld bc, (SH_HIST_MAX - 1) * SH_HIST_SLOT
+	call mem_copy
+	ld a, SH_HIST_MAX - 1
+	jr .dest
+.room:
+	ld a, [sh_hist_count]
+.dest:
+	call sh_hist_slot
+	push hl
+	ld hl, sh_input
+	pop de
+	call sh_copy_z
+	ld a, [sh_hist_count]
+	cp SH_HIST_MAX
+	jr nc, .reset
+	inc a
+	ld [sh_hist_count], a
+.reset:
+	jp sh_hist_reset
+
+; sh_hist_up:: recall the previous command (older).
+sh_hist_up:
+	ld a, [sh_hist_count]
+	or a
+	ret z
+	ld a, [sh_hist_pos]
+	ld b, a
+	ld a, [sh_hist_count]
+	cp b
+	jr nz, .older
+	call sh_hist_save_draft
+	ld a, [sh_hist_pos]
+	dec a
+	ld [sh_hist_pos], a
+	jr .load
+.older:
+	ld a, [sh_hist_pos]
+	or a
+	ret z
+	dec a
+	ld [sh_hist_pos], a
+.load:
+	ld a, [sh_hist_pos]
+	call sh_hist_slot
+	jp sh_hist_load
+
+; sh_hist_down:: move forward through history; the newest step is the draft.
+sh_hist_down:
+	ld a, [sh_hist_count]
+	or a
+	ret z
+	ld a, [sh_hist_pos]
+	ld b, a
+	ld a, [sh_hist_count]
+	cp b
+	ret z                ; already at the draft/new-input position
+	ld a, b
+	inc a
+	ld [sh_hist_pos], a
+	ld b, a
+	ld a, [sh_hist_count]
+	cp b
+	jr nz, .load_entry
+	ld hl, sh_hist_draft
+	jp sh_hist_load
+.load_entry:
+	ld a, [sh_hist_pos]
+	call sh_hist_slot
+	jp sh_hist_load
+
 ; ---- input handling ---------------------------------------------------
 
 shell_update::
-	; SELECT+START leaves the shell (fresh press of either key, both held)
+	; SELECT+START returns to the browser (fresh press of either key,
+	; both held); the "exit" command still logs out to the splash.
 	ld a, [joy_pressed]
 	and J_SELECT | J_START
 	jr z, .no_back
 	ld a, [joy_held]
 	and J_SELECT | J_START
 	cp J_SELECT | J_START
-	jp z, h_exit
+	jp z, h_browser
 .no_back:
-	ld a, [joy_pressed]
-	and J_UP
-	jp nz, .kb_up
-	ld a, [joy_pressed]
-	and J_DOWN
-	jp nz, .kb_down
-	ld a, [joy_pressed]
-	and J_LEFT
-	jp nz, .kb_left
-	ld a, [joy_pressed]
-	and J_RIGHT
-	jp nz, .kb_right
-	ld a, [joy_pressed]
-	and J_A
-	jp nz, .key_a
-	ld a, [joy_pressed]
-	and J_B
-	jp nz, .key_b
-	ld a, [joy_pressed]
-	and J_START
-	jp nz, .key_start
+	; SELECT is armed on press; a tap toggles shift on release. Holding
+	; SELECT while pressing UP/DOWN browses command history instead.
 	ld a, [joy_pressed]
 	and J_SELECT
-	jp nz, .key_select
+	jr z, .sel_release
+	ld a, 1
+	ld [sh_sel_armed], a
+	xor a
+	ld [sh_sel_combo], a
+.sel_release:
+	ld a, [joy_released]
+	and J_SELECT
+	jr z, .up
+	ld a, [sh_sel_armed]
+	or a
+	jr z, .up
+	xor a
+	ld [sh_sel_armed], a
+	ld a, [sh_sel_combo]
+	or a
+	jr nz, .sel_combo_done
+	ld a, [shift_on]
+	cpl
+	ld [shift_on], a
+	call shell_render_kb
+	jr .up
+.sel_combo_done:
+	xor a
+	ld [sh_sel_combo], a
+.up:
+	ld a, [joy_pressed]
+	and J_UP
+	jr z, .down
+	ld a, [joy_held]
+	and J_SELECT
+	jr z, .kb_up
+	ld a, 1
+	ld [sh_sel_combo], a
+	call sh_hist_up
 	ret
 .kb_up:
 	jp kb_move_up
+.down:
+	ld a, [joy_pressed]
+	and J_DOWN
+	jr z, .left
+	ld a, [joy_held]
+	and J_SELECT
+	jr z, .kb_down
+	ld a, 1
+	ld [sh_sel_combo], a
+	call sh_hist_down
+	ret
 .kb_down:
 	jp kb_move_down
+.left:
+	ld a, [joy_pressed]
+	and J_LEFT
+	jp nz, .kb_left
+.right:
+	ld a, [joy_pressed]
+	and J_RIGHT
+	jp nz, .kb_right
+.a_key:
+	ld a, [joy_pressed]
+	and J_A
+	jp nz, .key_a
+.b_key:
+	ld a, [joy_pressed]
+	and J_B
+	jp nz, .key_b
+.start_key:
+	ld a, [joy_pressed]
+	and J_START
+	jp nz, .key_start
+	ret
 .kb_left:
 	jp kb_move_left
 .kb_right:
@@ -493,6 +728,7 @@ shell_update::
 	ld [sh_len], a
 	ld a, 1
 	ld [sh_used], a
+	call sh_hist_reset
 	call shell_render_input
 	ret
 .key_b:
@@ -507,6 +743,7 @@ shell_update::
 	add hl, bc
 	xor a
 	ld [hl], a
+	call sh_hist_reset
 	call shell_render_input
 	ret
 .key_start:
@@ -518,6 +755,7 @@ shell_update::
 	add hl, bc
 	xor a
 	ld [hl], a
+	call sh_hist_add
 	; echo command line into terminal
 	; cursor position is preserved from previous command's output,
 	; but may be on row 11 if this is the first command after shell_enter
@@ -583,12 +821,6 @@ shell_update::
 	; update over several budgeted partial blits
 	ld a, 1
 	ld [scr_full], a
-	ret
-.key_select:
-	ld a, [shift_on]
-	cpl
-	ld [shift_on], a
-	call shell_render_kb
 	ret
 
 ; ---- path creation ----------------------------------------------------
@@ -1204,6 +1436,9 @@ h_uname::
 	call txt_putc
 	ret
 
+h_top::
+	jp top_enter
+
 h_uptime::
 	ld hl, str_up
 	call txt_print_z
@@ -1243,6 +1478,18 @@ h_motd::
 	call txt_putc
 	jr .m
 
+h_browser::
+	; return to the file browser, showing the shell's current directory
+	ld a, MODE_BROWSER
+	ld [mode], a
+	xor a
+	ld [scr_top], a
+	ld [b_armed], a
+	ld [b_combo], a
+	ld a, SCREEN_H - 1
+	ld [scr_bot], a
+	jp browser_refresh
+
 h_exit::
 	jp title_enter      ; exit = log out, back to the splash screen
 
@@ -1251,6 +1498,8 @@ h_exit::
 sh_banner:
 	db "D-PAD pick, A types", $0A
 	db "START runs the line", $0A
+	db "SEL+UP/DN history", $0A
+	db "SEL+START browser", $0A
 	db "help for cmds", $0A, 0
 
 str_typing_hint:
@@ -1274,6 +1523,7 @@ sh_cmds:
 	dw cmd_whoami, h_whoami
 	dw cmd_uname, h_uname
 	dw cmd_uptime, h_uptime
+	dw cmd_top, h_top
 	dw cmd_motd, h_motd
 	dw cmd_exit, h_exit
 	dw $0000, $0000
@@ -1293,20 +1543,21 @@ cmd_clear:  db "clear", 0
 cmd_whoami: db "whoami", 0
 cmd_uname:  db "uname", 0
 cmd_uptime: db "uptime", 0
+cmd_top:    db "top", 0
 cmd_motd:   db "motd", 0
 cmd_exit:   db "exit", 0
 
 txt_help:
-	db "commands:", $0A
-	db " help ls cd pwd cat", $0A
-	db " gbedit echo mkdir", $0A
-	db " rmdir rm touch", $0A
-	db " whoami uname uptime", $0A
-	db " clear motd exit", $0A
-	db "A type  B backspace", $0A
-	db "START run", $0A
-	db "SELECT shift", $0A
-	db "SELECT+START back", $0A, 0
+	db "cmds: help ls cd pwd", $0A
+	db " cat gbedit echo rm", $0A
+	db " mkdir rmdir touch", $0A
+	db " top whoami uname", $0A
+	db " uptime clear motd", $0A
+	db "exit -> splash", $0A
+	db "A type B delete", $0A
+	db "SEL shift START run", $0A
+	db "SEL+UP/DN history", $0A
+	db "SEL+START browser", $0A, 0
 
 str_err:            db "error: ", 0
 str_home:           db "/home/user", 0

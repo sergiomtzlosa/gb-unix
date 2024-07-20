@@ -5,8 +5,10 @@
 A playable Game Boy ROM that boots into a tiny Unix-like environment: a file
 browser over a fake root filesystem (`/`, `/bin`, `/etc`, `/home/user`, ...)
 plus a mini shell (`gbsh`) where you type real commands on an on-screen
-keyboard. Files you create survive power-off via battery-backed SRAM —
-exactly like a game save.
+keyboard. The shell remembers recent commands, the editor (`gbedit`) lets you
+change files on the Game Boy itself, and `top` shows a live system monitor.
+Files you create survive power-off via battery-backed SRAM — exactly like a
+game save.
 
 Written in **RGBDS assembly**, with the `gbsh` shell's `pwd`/`echo` output
 path implemented in C (compiled with [SDCC](https://sdcc.sourceforge.net/)
@@ -27,7 +29,13 @@ MBC1 with 8 KB battery-backed RAM (cart type `0x03`).
 | **B + A** | — | — | — | Insert newline |
 | **Start** | Enter shell (`gbsh`) | Execute command | Close | Save file and quit |
 | **Select** | Toggle long listing (`drwxr-xr-x`) | Toggle shift layer (caps/symbols) | — | Toggle shift layer |
+| **Select + Up/Down** | — | Previous/next command in history | — | — |
 | **Select + Start** | Key help | Leave shell (back to browser) | — | Quit without saving |
+
+In the key help, **Up/Down** scrolls one line, **Left/Right** pages, and
+**A/B/Start** returns to the previous screen.
+
+In the `top` monitor, **B**, **A**, or **Start** returns to the shell.
 
 On the title screen, **Start** or **A** logs in and **Select** opens the key
 help. A tiny pixel-art Tux + `GB-UNIX` logo tops the splash, and an 8-bit
@@ -47,12 +55,18 @@ chiptune jingle (pulse melody + bass + noise hat) loops here only.
 4. **Shell** — a scrolling 20×11 terminal with a path prompt (`/$`, `/etc$`,
    `/home/user$`; deep paths fall back to their basename), an input line, and
    a 6×10 QWERTY-ish on-screen keyboard (lowercase letters, digits, symbols
-   via the shift layer).
+   via the shift layer). Select+Up/Down browses the command history;
+   Select+Start returns to the browser, while `exit` logs out to the splash.
 5. **Text editor (`gbedit`)** — a full-screen editor with a 9-line text view,
    horizontal scrolling for long lines, and the same on-screen keyboard.
    Start saves and quits; Select+Start quits without saving.
-6. **Key help** — a full-screen table of every control, opened with Select on
-   the title screen or Select+Start in the browser; any key returns.
+6. **Key help** — a scrollable full-screen reference covering the title,
+   browser, pager, shell, `gbedit`, and `top` controls. Opened with Select on
+   the title screen or Select+Start in the browser. Up/Down scroll one line,
+   Left/Right page, and A/B/Start returns to the previous screen.
+7. **System monitor (`top`)** — a full-screen top-style dashboard with a
+   once-per-second uptime clock, the running main-loop task, inode counts,
+   and SRAM heap use. B, A, or Start returns to the shell.
 
 ## Shell commands
 
@@ -75,8 +89,106 @@ chiptune jingle (pulse melody + bass + noise hat) loops here only.
 | `whoami` | Print the current user |
 | `uname` | Print the system name |
 | `uptime` | Print time since boot (minutes and seconds) |
+| `top` | Open the live system monitor (uptime, tasks, inodes, SRAM heap) |
 | `motd` | Print the message of the day (`/etc/motd`) |
-| `exit` | Log out: return to the splash screen (same as Select+Start) |
+| `exit` | Log out: return to the splash screen (`Select+Start` returns to the browser instead) |
+
+### Shell history
+
+`gbsh` keeps the last eight non-empty commands in RAM:
+
+- Hold **Select** and press **Up** to recall older commands.
+- Hold **Select** and press **Down** to move forward again.
+- Moving forward past the newest entry restores the line you were typing
+  before you started browsing.
+- **Start** adds the current line to history; repeating the previous command
+  does not create a duplicate.
+- History survives a trip through `gbedit` or `top` and back, but a power
+  cycle clears it.
+
+A quick **Select** tap still toggles the shift layer. The history shortcut
+only fires while Select is held with Up/Down.
+
+### gbedit
+
+`gbedit FILE` opens `FILE` for editing and creates it when missing:
+
+```text
+/$ gbedit note
+```
+
+The editor uses the same on-screen keyboard as the shell and shows nine text
+rows at a time. Long lines scroll horizontally; longer files scroll
+vertically.
+
+| Key | Action |
+|---|---|
+| **D-Pad** | Move the keyboard cursor |
+| **A** | Insert the selected character |
+| **B** | Backspace; at column 0, join with the previous line |
+| **B + D-Pad** | Move the text cursor |
+| **B + A** | Insert a newline |
+| **Select** | Toggle the shift layer |
+| **Start** | Save the file and return to the shell |
+| **Select + Start** | Discard changes and return to the shell |
+
+Notes:
+
+- Only files in SRAM can be edited. ROM files such as `/etc/motd` and
+  `/home/user/readme.txt` are read-only and return
+  `error: operation not permitted`.
+- The edit buffer holds up to 2047 bytes. Larger files are rejected with
+  `error: file too large`.
+- Saving reuses the file's existing SRAM space when the new contents fit; a
+  larger file gets fresh heap space. If the SRAM heap is full, the editor
+  stays open with `error: no space left on device`, so you can delete
+  something and try again.
+- Missing files are created in the current directory. Parent directories
+  must already exist.
+- There is no undo: Select+Start is the escape hatch for a bad edit.
+- `cat /bin/gbedit` shows the same short manual page from inside the ROM.
+
+### top
+
+`top` opens a full-screen, top-style system monitor:
+
+```text
+GB-UNIX top
+up 12m 34s
+--------------------
+ PID STAT COMMAND
+  1  R  main loop
+tasks: 1 running
+--------------------
+inodes: 48/96
+files: 33  dirs: 15
+heap: 2048/6240 B
+free: 4192 B
+SRAM: 8 KB
+--------------------
+A/B/START: back
+```
+
+The uptime line refreshes once per second while the screen is open. The
+inode, file/directory, and heap numbers are a snapshot taken when `top`
+starts. **B**, **A**, or **Start** returns to the shell.
+
+There is no process scheduler in gb-unix: the whole system is one cooperative
+main loop, so the task table always reports the single `main loop` task.
+`top` is a system monitor, not a process manager.
+
+### Key help
+
+**Select** on the title screen, or **Select+Start** in the browser, opens the
+scrollable key reference. It covers the title screen, browser, pager, shell,
+`gbedit`, and `top`:
+
+- **Up/Down** scroll one line.
+- **Left/Right** page up/down.
+- **A**, **B**, or **Start** returns to the previous screen.
+
+The bottom row always shows the scroll and close hint, so the controls for
+help itself are visible no matter which page is open.
 
 Notes:
 
@@ -89,17 +201,13 @@ Notes:
   `rmdir /tmp` or `echo x > /etc/hostname` fail with
   `error: operation not permitted`. Files and directories you create are
   yours to change.
-- `gbedit file` edits SRAM files only; the immutable ROM files (`/etc/motd`,
-  `/home/user/readme.txt`, ...) return `error: operation not permitted`.
-  The buffer holds 2047 bytes; long lines scroll horizontally. Start saves,
-  Select+Start discards changes.
 - `echo hello > file` writes `hello\n` into `file` (output redirection).
 - `cat` reads both the read-only system files (from ROM) and files you created
   (from SRAM); several files can be given, and directories or missing files
   print an error.
 - Every built-in has a file in `/bin` (`cat`, `cd`, `clear`, `echo`, `exit`,
   `gbedit`, `help`, `ls`, `mkdir`, `pwd`, `rm`, `rmdir`, `sh`, `touch`,
-  `uname`, `uptime`, `whoami`) holding a short man-page-style note —
+  `top`, `uname`, `uptime`, `whoami`) holding a short man-page-style note —
   `cat /bin/pwd` explains `pwd` and how to run it. They are documentation,
   not separate programs (gbsh is a built-in shell), but you can still run
   them by path:
@@ -160,8 +268,14 @@ or flash it to hardware. Try:
 3. START → shell. Type `help` on the keyboard, START to run.
 4. `gbedit note` — type a few lines (B+A makes a newline), START to save and
    quit, then `cat note` to read it back.
-5. `mkdir demo` / `touch note` / `echo hi > note` — then power-cycle the
-   emulator: your files are still there.
+5. Run a few commands (for example `uname`, `pwd`, `uptime`), then hold SELECT
+   and press UP/DOWN to browse the command history. START runs a recalled
+   command.
+6. Type `top` to open the live system monitor; A, B, or START returns to the
+   shell.
+7. `mkdir demo` / `touch note` / `echo hi > note` — then power-cycle the
+   emulator: your files are still there. Command history is RAM-only and
+   resets at power-off.
 
 ## Project layout
 
@@ -183,7 +297,8 @@ gb-unix/
     ├── browser.asm     — browser UI
     ├── pager.asm       — file viewer
     ├── editor.asm      — gbedit text editor
-    ├── shell.asm       — tokenizer, command table, executors, tty
+    ├── top.asm         — top-style system monitor (uptime, inodes, heap)
+    ├── shell.asm       — tokenizer, command table, executors, tty, history
     ├── music.asm       — splash-screen chiptune sequencer + song data
     ├── shcmd.c         — C: pwd/echo output (SDCC → RGBDS asm, see cwrite.asm)
     ├── cwrite.asm      — asm store/load helpers used by shcmd.c
@@ -195,7 +310,11 @@ gb-unix/
 ## Limitations
 
 - 96 inodes total, 30-char command lines, 11-char file names (like classic
-  Unix!), ~2 KB of user file content.
+  Unix!). The SRAM content heap is 6240 bytes; a single `gbedit` file is
+  limited to 2047 bytes.
+- Shell history holds eight commands in WRAM; it is not saved to SRAM.
+- `top` shows one task because gb-unix has no process scheduler; only the
+  uptime line changes while the monitor is open.
 - File pager shows ASCII text; binary files render their bytes as text.
 - The clock is frame-accurate only while the console is on (uptime resets on
   boot — no RTC).
@@ -203,5 +322,6 @@ gb-unix/
 ## Status
 
 Complete: boot/title, browser (short + long listing), pager, shell with
-on-screen keyboard, full command set, `gbedit` text editor, SRAM persistence
-of `mkdir`/`touch`/`rm`/`rmdir`/redirection/edited files across power cycles.
+on-screen keyboard, command history, full command set, `gbedit` text editor,
+`top` system monitor, SRAM persistence of
+`mkdir`/`touch`/`rm`/`rmdir`/redirection/edited files across power cycles.

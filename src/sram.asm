@@ -16,19 +16,6 @@
 include "hardware.inc"
 include "fs.inc"
 
-def SRAM_MAGIC    equ $A000
-def SRAM_VER      equ $A004
-def SRAM_HEAP_PTR equ $A006
-def SRAM_NODES    equ $A010
-
-def NODE_SIZE     equ 20
-def NODE_COUNT    equ 96
-def NODE_HEAP     equ $A010 + NODE_COUNT * NODE_SIZE ; $A790
-def HEAP_END      equ $BFF0
-
-export SRAM_NODES, NODE_COUNT
-
-
 section "sram", rom0
 
 ; sram_enable:: open the SRAM gate.

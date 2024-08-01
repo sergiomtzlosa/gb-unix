@@ -249,6 +249,18 @@ run in gbsh:
 gbsh built-in.
 """
 
+BIN_TOP = """top - system monitor
+
+run in gbsh:
+  top
+
+shows uptime, the
+main loop task,
+inodes, SRAM heap.
+
+A/B/START: back.
+"""
+
 BIN_EXIT = """exit - leave gbsh.
 
 run in gbsh:
@@ -306,6 +318,7 @@ TREE = D("/", [
         F("rmdir", BIN_RMDIR),
         F("sh", BIN_SH),
         F("touch", BIN_TOUCH),
+        F("top", BIN_TOP),
         F("uname", BIN_UNAME),
         F("uptime", BIN_UPTIME),
         F("whoami", BIN_WHOAMI),

@@ -6,7 +6,7 @@ def BGP_DEFAULT  equ $E4         ; 3-bit grayscale palette
 
 section "vars", wram0
 
-mode::          db              ; MODE_BROWSER / MODE_SHELL / MODE_PAGER
+mode::          db              ; current screen mode
 upt_frames::    db              ; 0..59
 upt_secs::      ds 2            ; seconds since boot (u16)
 boot_flags::    db              ; bit0: save was fresh
@@ -38,6 +38,8 @@ boot_start::
 	; filesystem state
 	xor a
 	ld [cwd_depth], a
+	; shell history starts empty for this session
+	call shell_init
 	; LCD on: BG on, tiles $8000, map $9800
 	ld a, LCDC_ON | LCDC_TILE8000 | LCDC_BG_ON
 	ldh [rLCDC], a
@@ -165,6 +167,8 @@ main_loop::
 	jr z, .help
 	cp MODE_EDITOR
 	jr z, .editor
+	cp MODE_TOP
+	jr z, .top
 	jr main_loop
 .browser:
 	call browser_update
@@ -183,6 +187,9 @@ main_loop::
 	jr main_loop
 .editor:
 	call editor_update
+	jr main_loop
+.top:
+	call top_update
 	jr main_loop
 
 ; wait_vblank:: busy-wait for VBlank; blit dirty rows; wait for frame end.

@@ -75,6 +75,7 @@ chiptune jingle (pulse melody + bass + noise hat) loops here only.
 | Command | Description |
 |---|---|
 | `help` | List the commands and the shell's key bindings |
+| `history` | Print the numbered list of remembered commands, oldest first |
 | `ls [-l] [PATH]` | List a directory (or print a file's name); `-l` shows the long form `drwxr-xr-x dir` / `-rw-r--r-- 48B file` |
 | `cd [PATH]` | Change directory; `cd` with no argument goes to `/home/user` |
 | `pwd` | Print the current directory path (`/ (root)` at the root) |
@@ -103,6 +104,8 @@ chiptune jingle (pulse melody + bass + noise hat) loops here only.
   before you started browsing.
 - **Start** adds the current line to history; repeating the previous command
   does not create a duplicate.
+- Run `history` to print the numbered list of remembered commands, oldest
+  first. The `history` command itself is not stored.
 - History survives a trip through `gbedit` or `top` and back, but a power
   cycle clears it.
 
@@ -160,8 +163,8 @@ up 12m 34s
   1  R  main loop
 tasks: 1 running
 --------------------
-inodes: 48/96
-files: 33  dirs: 15
+inodes: 49/96
+files: 34  dirs: 15
 heap: 2048/6240 B
 free: 4192 B
 SRAM: 8 KB
@@ -206,11 +209,11 @@ Notes:
   (from SRAM); several files can be given, and directories or missing files
   print an error.
 - Every built-in has a file in `/bin` (`cat`, `cd`, `clear`, `echo`, `exit`,
-  `gbedit`, `help`, `ls`, `mkdir`, `pwd`, `rm`, `rmdir`, `sh`, `touch`,
-  `top`, `uname`, `uptime`, `whoami`) holding a short man-page-style note —
-  `cat /bin/pwd` explains `pwd` and how to run it. They are documentation,
-  not separate programs (gbsh is a built-in shell), but you can still run
-  them by path:
+  `gbedit`, `help`, `history`, `ls`, `mkdir`, `pwd`, `rm`, `rmdir`, `sh`,
+  `touch`, `top`, `uname`, `uptime`, `whoami`) holding a short
+  man-page-style note — `cat /bin/pwd` explains `pwd` and how to run it.
+  They are documentation, not separate programs (gbsh is a built-in shell),
+  but you can still run them by path:
   `/bin/pwd`, `bin/echo hi` and `./pwd` all invoke the built-in named after
   the last path component, so the files in `/bin` are not just decoration.
 - Paths may be absolute (`/etc/motd`) or relative (`motd`, `../etc/motd`).

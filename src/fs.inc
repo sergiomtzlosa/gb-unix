@@ -32,4 +32,4 @@ def NODE_COUNT    equ 96
 def NODE_HEAP     equ $A010 + NODE_COUNT * NODE_SIZE ; $A790
 def HEAP_END      equ $BFF0
 
-def FS_VERSION   equ 5
+def FS_VERSION   equ 6

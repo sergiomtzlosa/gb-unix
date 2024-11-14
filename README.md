@@ -72,6 +72,9 @@ chiptune jingle (pulse melody + bass + noise hat) loops here only.
 
 `gbsh` implements these commands:
 
+Run `make help` from the project directory to print this command list with
+short descriptions alongside the build targets.
+
 | Command | Description |
 |---|---|
 | `help` | List the commands and the shell's key bindings |
@@ -254,7 +257,18 @@ build uses the checked-in `src/generated/shcmd_sdcc.asm`.
 make            # builds gb-unix.gb
 make clean      # remove build artifacts
 make shcmd      # regenerate src/generated/shcmd_sdcc.asm (needs SDCC)
+make help       # list build targets and explain every gbsh command
 ```
+
+`make help` prints the build targets plus a short description of every
+command available inside the ROM shell.
+
+| Target | Description |
+|---|---|
+| `make`, `make all` | Build `gb-unix.gb` (default target) |
+| `make clean` | Remove `build/`, the ROM, symbol and map files |
+| `make shcmd` | Regenerate the checked-in C-to-RGBDS assembly (needs SDCC) |
+| `make help` | Show build targets and the full `gbsh` command reference |
 
 When SDCC is available, the C sources (`src/*.c`) are compiled to
 RGBDS-syntax assembly (`--asm=rgbds --no-peep`) and assembled with `rgbasm`;

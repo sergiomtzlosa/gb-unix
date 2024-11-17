@@ -523,7 +523,52 @@ sh_hist_reset:
 	ret
 
 ; sh_hist_add:: append sh_input to history, skipping a duplicate last entry.
+; The history listing command itself is not stored, including /bin/history
+; and uppercase forms.
 sh_hist_add:
+	ld de, sh_input
+	ld h, d
+	ld l, e
+.scan_slash:
+	ld a, [hl]
+	or a
+	jr z, .scan_done
+	cp ' '
+	jr z, .scan_done
+	cp '/'
+	jr nz, .scan_next
+	ld d, h
+	ld e, l
+	inc de              ; de = command after this slash
+.scan_next:
+	inc hl
+	jr .scan_slash
+.scan_done:
+	ld hl, sh_cmd_buf
+	ld c, 11
+.fold:
+	ld a, [de]
+	or a
+	jr z, .fold_end
+	cp ' '
+	jr z, .fold_end
+	inc de
+	cp 'A'
+	jr c, .fold_st
+	cp 'Z' + 1
+	jr nc, .fold_st
+	add 'a' - 'A'
+.fold_st:
+	ld [hl+], a
+	dec c
+	jr nz, .fold
+.fold_end:
+	xor a
+	ld [hl], a          ; NUL
+	ld hl, sh_cmd_buf
+	ld de, cmd_history
+	call strcmp_z
+	ret z
 	ld a, [sh_len]
 	or a
 	ret z
@@ -958,6 +1003,58 @@ h_help::
 	call h_clear         ; full 10-line help must fit the 11-row terminal
 	ld hl, txt_help
 	jp txt_print_z
+
+h_history::
+	; numbered list of remembered commands, oldest first
+	ld a, [sh_hist_count]
+	or a
+	jr nz, .list
+	ld hl, str_hist_empty
+	call txt_print_z
+	ld a, $0A
+	jp txt_putc
+.list:
+	ld b, 0             ; b = history index
+.loop:
+	ld a, [sh_hist_count]
+	cp b
+	ret z
+	ld a, ' '
+	call txt_putc
+	ld a, b
+	add '1'             ; SH_HIST_MAX is 8: one-digit numbers
+	call txt_putc
+	ld a, ' '
+	call txt_putc
+	push bc
+	ld a, b
+	call sh_hist_slot
+	ld d, 15             ; 3-char prefix + 15 + ".." = 20 columns
+.copy:
+	ld a, d
+	or a
+	jr z, .ellipsis
+	ld a, [hl]
+	or a
+	jr z, .line_done
+	call txt_putc
+	inc hl
+	dec d
+	jr .copy
+.ellipsis:
+	ld a, [hl]
+	or a
+	jr z, .line_done
+	ld a, '.'
+	call txt_putc
+	ld a, '.'
+	call txt_putc
+.line_done:
+	ld a, $0A
+	call txt_putc
+	pop bc
+	inc b
+	jr .loop
 
 h_ls::
 	xor a
@@ -1509,6 +1606,7 @@ str_typing_hint:
 
 sh_cmds:
 	dw cmd_help, h_help
+	dw cmd_history, h_history
 	dw cmd_ls, h_ls
 	dw cmd_cd, h_cd
 	dw cmd_pwd, h_pwd
@@ -1529,6 +1627,7 @@ sh_cmds:
 	dw $0000, $0000
 
 cmd_help:   db "help", 0
+cmd_history: db "history", 0
 cmd_ls:     db "ls", 0
 cmd_cd:     db "cd", 0
 cmd_pwd:    db "pwd", 0
@@ -1550,16 +1649,17 @@ cmd_exit:   db "exit", 0
 txt_help:
 	db "cmds: help ls cd pwd", $0A
 	db " cat gbedit echo rm", $0A
-	db " mkdir rmdir touch", $0A
-	db " top whoami uname", $0A
-	db " uptime clear motd", $0A
-	db "exit -> splash", $0A
+	db " mkdir rmdir history", $0A
+	db " touch top whoami", $0A
+	db " uname uptime clear", $0A
+	db " motd exit->splash", $0A
 	db "A type B delete", $0A
 	db "SEL shift START run", $0A
 	db "SEL+UP/DN history", $0A
 	db "SEL+START browser", $0A, 0
 
 str_err:            db "error: ", 0
+str_hist_empty:     db "history: empty", 0
 str_home:           db "/home/user", 0
 str_etc_motd:       db "/etc/motd", 0
 str_gt:             db ">", 0

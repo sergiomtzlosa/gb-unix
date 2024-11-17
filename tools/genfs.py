@@ -161,6 +161,18 @@ run in gbsh:
 gbsh built-in.
 """
 
+BIN_HISTORY = """history - cmd list.
+
+run in gbsh:
+  history
+
+shows the last 8
+commands, oldest
+first.
+
+gbsh built-in.
+"""
+
 BIN_CD = """cd - change dir.
 
 run in gbsh:
@@ -266,7 +278,8 @@ BIN_EXIT = """exit - leave gbsh.
 run in gbsh:
   exit
 
-returns to the splash screen; also Select+Start.
+returns to splash.
+SEL+START: browser.
 
 gbsh built-in.
 """
@@ -311,6 +324,7 @@ TREE = D("/", [
         F("exit", BIN_EXIT),
         F("gbedit", BIN_GBEDIT),
         F("help", BIN_HELP),
+        F("history", BIN_HISTORY),
         F("ls", BIN_LS),
         F("mkdir", BIN_MKDIR),
         F("pwd", BIN_PWD),

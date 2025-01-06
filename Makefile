@@ -23,7 +23,38 @@ OBJ := $(SRC:src/%.asm=$(BUILD)/%.o) $(CSRC:src/%.c=$(BUILD)/%.o)
 SHCMD_ASM := src/generated/shcmd_sdcc.asm
 SDCC_FOUND := $(shell command -v sdcc >/dev/null 2>&1 && echo 1)
 
-.PHONY: all clean shcmd
+.DEFAULT_GOAL := all
+.PHONY: all clean shcmd help
+
+help:
+	@echo "gb-unix - available commands"
+	@echo ""
+	@echo "Build targets:"
+	@echo "  make, make all   Build gb-unix.gb (default)"
+	@echo "  make clean       Remove build/, the ROM, symbol and map files"
+	@echo "  make shcmd       Regenerate src/generated/shcmd_sdcc.asm (needs SDCC)"
+	@echo "  make help        Show this help"
+	@echo ""
+	@echo "gbsh commands (run inside the ROM shell):"
+	@echo "  help             List commands and shell key bindings"
+	@echo "  history          Show the last 8 commands, oldest first"
+	@echo "  ls [-l] [PATH]   List a directory or file"
+	@echo "  cd [PATH]        Change directory (default /home/user)"
+	@echo "  pwd              Print the current directory"
+	@echo "  cat FILE...      Print one or more files"
+	@echo "  echo [TEXT...]   Print text; echo TEXT > FILE writes a file"
+	@echo "  mkdir DIR        Create a directory"
+	@echo "  rmdir DIR        Remove an empty directory"
+	@echo "  rm FILE          Remove a file"
+	@echo "  touch FILE       Create an empty file"
+	@echo "  gbedit FILE      Edit or create a file"
+	@echo "  clear            Clear the terminal"
+	@echo "  whoami           Print the current user"
+	@echo "  uname            Print the system name"
+	@echo "  uptime           Print time since boot"
+	@echo "  top              Open the live system monitor"
+	@echo "  motd             Print the message of the day"
+	@echo "  exit             Log out to the splash screen"
 
 all: $(ROM)
 

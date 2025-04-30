@@ -1,14 +1,11 @@
-; shcmd_sdcc.asm — pre-generated SDCC output for src/shcmd.c.
+; shcmd_sdcc.asm — generated from src/shcmd.c by SDCC.
 ;
-; This file is only used when `sdcc` is not on $PATH, so the ROM can still
-; be built with just the bundled RGBDS. Regenerate it with SDCC 4.2+:
-;
-;   sdcc -msm83 --asm=rgbds --no-peep -S src/shcmd.c \
-;        -o src/generated/shcmd_sdcc.asm
-;
+; Used when no SDCC 4.2+ compiler is available, so the ROM can still be
+; built with just the bundled RGBDS. Regenerate with `make shcmd`.
+
 ;--------------------------------------------------------
-; File Created by SDCC : free open source ANSI-C Compiler
-; Version 4.2.0 #13081 (Linux)
+; File Created by SDCC : free open source ISO C Compiler
+; Version 4.4.1 #14650 (Linux)
 ;--------------------------------------------------------
 	; MODULE shcmd
 	; Generated using the rgbds tokens.
@@ -72,15 +69,15 @@ _s_base:
 ; Function off_row
 ; ---------------------------------
 _off_row:
-	ld	c, a
 ;src/shcmd.c:60: return ((uint16_t)r << 4) + ((uint16_t)r << 2);
 	ld	b, $00
-	ld	l, c
+	ld	l, a
 	ld	h, b
 	add	hl, hl
 	add	hl, hl
 	add	hl, hl
 	add	hl, hl
+	ld	c, a
 	sla	c
 	rl	b
 	sla	c
@@ -293,36 +290,28 @@ _shc_newline:
 ; Function shc_putc
 ; ---------------------------------
 _shc_putc::
-	dec	sp
-	ld	c, a
 ;src/shcmd.c:98: uint8_t ch = (uint8_t)c_in;
-	ld	hl, sp+0
-	ld	[hl], c
+	ld	e, a
 ;src/shcmd.c:102: if (ch == '\n') {
-	ld	a, c
-	sub	a, $0A
-	jp	NZ,.l00125
-	jp	.l00126
-.l00125:
+	cp	a, $0A
+	jp	NZ,.l00131
+	jp	.l00132
+.l00131:
 	jp	.l00102
-.l00126:
+.l00132:
 ;src/shcmd.c:103: shc_newline();
-	inc	sp
 	jp	_shc_newline
 ;src/shcmd.c:104: return;
 	jp	.l00108
 .l00102:
 ;src/shcmd.c:106: if (ch < 0x20u || ch >= 0x7Fu)
-	ld	a, c
-	sub	a, $20
+	cp	a, $20
 	jp	C, .l00103
-	ld	a, c
 	sub	a, $7F
 	jp	C, .l00104
 .l00103:
 ;src/shcmd.c:107: ch = '.';                          /* control bytes render as '.' */
-	ld	hl, sp+0
-	ld	[hl], $2E
+	ld	e, $2E
 .l00104:
 ;src/shcmd.c:108: if (cur_col >= SCREEN_W)
 	ld	hl, _cur_col
@@ -330,14 +319,16 @@ _shc_putc::
 	sub	a, $14
 	jp	C, .l00107
 ;src/shcmd.c:109: shc_newline();                     /* resolve pending wrap */
+	push	de
 	call	_shc_newline
+	pop	de
 .l00107:
 ;src/shcmd.c:110: r = cur_row;
 	ld	hl, _cur_row
-	ld	e, [hl]
+	ld	d, [hl]
 ;src/shcmd.c:111: off = off_row(r) + cur_col;
 	push	de
-	ld	a, e
+	ld	a, d
 	call	_off_row
 	pop	de
 	ld	hl, _cur_col
@@ -351,22 +342,26 @@ _shc_putc::
 	ld	c, l
 	ld	b, h
 ;src/shcmd.c:112: shc_store((uint16_t)screen_buf + off, ch - 0x20u);
-	ld	hl, sp+0
-	ld	a, [hl]
+	ld	a, e
 	add	a, $E0
-	ld	d, a
+	ld	e, a
 	ld	hl, _screen_buf
 	add	hl, bc
 	push	de
-	ld	a, d
+	ld	a, e
 	ld	e, l
 	ld	d, h
 	call	_shc_store
 	pop	de
 ;src/shcmd.c:113: shc_store((uint16_t)dirty_rows + r, 1);
-	ld	hl, _dirty_rows
-	ld	d, $00
-	add	hl, de
+	ld	l, d
+;	spillPairReg hl
+;	spillPairReg hl
+	ld	bc, _dirty_rows
+	ld	h, $00
+;	spillPairReg hl
+;	spillPairReg hl
+	add	hl, bc
 	ld	e, l
 	ld	d, h
 	ld	a, $01
@@ -376,17 +371,18 @@ _shc_putc::
 	inc	[hl]
 .l00108:
 ;src/shcmd.c:115: }
-	inc	sp
 	ret
 ;src/shcmd.c:118: void shc_puts(const char *s)
 ;	---------------------------------
 ; Function shc_puts
 ; ---------------------------------
 _shc_puts::
+	dec	sp
 .l00104:
 ;src/shcmd.c:121: char c = *s;
 	ld	a, [de]
-	ld	c, a
+	ld	hl, sp+0
+	ld	[hl], a
 ;src/shcmd.c:122: if (c == 0)
 	or	a, a
 	jp	NZ, .l00102
@@ -395,7 +391,8 @@ _shc_puts::
 .l00102:
 ;src/shcmd.c:124: shc_putc(c);
 	push	de
-	ld	a, c
+	ld	hl, sp+2
+	ld	a, [hl]
 	call	_shc_putc
 	pop	de
 ;src/shcmd.c:125: s++;
@@ -403,6 +400,7 @@ _shc_puts::
 	jp	.l00104
 .l00106:
 ;src/shcmd.c:127: }
+	inc	sp
 	ret
 ;src/shcmd.c:130: void shc_pwd(void)
 ;	---------------------------------
@@ -456,9 +454,9 @@ _shc_echo_plain::
 ;src/shcmd.c:148: if (i != 1)
 	ld	a, c
 	dec	a
-	jp	NZ,.l00125
+	jp	NZ,.l00131
 	jp	.l00102
-.l00125:
+.l00131:
 ;src/shcmd.c:149: shc_putc(' ');
 	push	bc
 	ld	a, $20

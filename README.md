@@ -251,13 +251,25 @@ The Makefile uses the prebuilt [RGBDS](https://rgbds.gbdev.io/) in
 `tools/rgbds/`, so `make` works without installing `rgbasm`/`rgblink`/`rgbfix`.
 [SDCC](https://sdcc.sourceforge.net/) (`sdcc`, 4.2+) is only needed to
 recompile the C module after editing `src/*.c`; if it is not installed, the
-build uses the checked-in `src/generated/shcmd_sdcc.asm`.
+build uses the checked-in `src/generated/shcmd_sdcc.asm`. Normal `make` never
+downloads or installs anything.
+
+On Linux and macOS, `make shcmd` uses a system SDCC when it is 4.2 or newer.
+If it is missing or older, the target downloads a prebuilt SDCC from the
+[GBDK-2020 project](https://github.com/gbdk-2020/gbdk-2020) into `.cache/sdcc`
+and uses that compiler. The GBDK-2020 Linux build is used because the official
+SDCC Linux binaries require a newer glibc. The download is SHA-256 checked.
+Prebuilt packages are available for Linux x86-64/arm64 and macOS x86-64/arm64;
+other platforms need a manual SDCC 4.2+ install. If the download or regeneration
+fails, `make shcmd` keeps the checked-in file and prints a note instead of
+failing.
 
 ```sh
-make            # builds gb-unix.gb
-make clean      # remove build artifacts
-make shcmd      # regenerate src/generated/shcmd_sdcc.asm (needs SDCC)
-make help       # list build targets and explain every gbsh command
+make                # builds gb-unix.gb
+make clean          # remove build artifacts
+make install-sdcc   # download prebuilt SDCC for Linux/macOS if needed
+make shcmd          # download SDCC if needed, then regenerate the assembly
+make help           # list build targets and explain every gbsh command
 ```
 
 `make help` prints the build targets plus a short description of every
@@ -267,13 +279,15 @@ command available inside the ROM shell.
 |---|---|
 | `make`, `make all` | Build `gb-unix.gb` (default target) |
 | `make clean` | Remove `build/`, the ROM, symbol and map files |
-| `make shcmd` | Regenerate the checked-in C-to-RGBDS assembly (needs SDCC) |
+| `make install-sdcc` | Download a prebuilt SDCC for Linux/macOS when no 4.2+ compiler is available |
+| `make shcmd` | Download SDCC if needed, then regenerate the checked-in C-to-RGBDS assembly |
 | `make help` | Show build targets and the full `gbsh` command reference |
 
-When SDCC is available, the C sources (`src/*.c`) are compiled to
-RGBDS-syntax assembly (`--asm=rgbds --no-peep`) and assembled with `rgbasm`;
-C artifacts land in `build/`. Override `AS`/`CC`/`LD`/`FIX` in the Makefile
-(or `RGBDS_DIR`) to use system tools instead of the bundled ones.
+When a 4.2+ SDCC is available (system or downloaded), the C sources
+(`src/*.c`) are compiled to RGBDS-syntax assembly (`--asm=rgbds --no-peep`)
+and assembled with `rgbasm`; C artifacts land in `build/`. Override
+`AS`/`CC`/`LD`/`FIX` in the Makefile (or `RGBDS_DIR`) to use system tools
+instead of the bundled ones.
 
 ## Running
 

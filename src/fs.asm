@@ -22,7 +22,7 @@ fs_name_buf::   ds 12
 pwd_buf::
 _pwd_buf::      ds 24
 tmp_stack::     ds 16
-list_entries::  ds 16           ; fs_list never stores more than 16
+list_entries::  ds NODE_COUNT   ; one node index per filesystem inode
 list_count::    db
 fread_src::     ds 2
 fread_rem::     ds 2
@@ -395,7 +395,7 @@ fs_list::
 	ld c, 0
 .loop:
 	ld a, c
-	cp 16               ; list_entries buffer is 16 — never overrun
+	cp NODE_COUNT       ; list_entries has one byte per inode
 	jr z, .done
 	ld a, b
 	cp $FF

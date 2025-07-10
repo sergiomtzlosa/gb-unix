@@ -150,7 +150,7 @@ help_l01: db "TITLE", 0
 help_l02: db " START/A login", 0
 help_l03: db " SELECT help", 0
 help_l04: db "BROWSER", 0
-help_l05: db " UP/DOWN  select", 0
+help_l05: db " UP/DN move/scroll", 0
 help_l06: db " LEFT/RIGHT page", 0
 help_l07: db " A enter  B parent", 0
 help_l08: db " B+UP/DN root/home", 0

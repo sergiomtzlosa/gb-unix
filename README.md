@@ -19,7 +19,7 @@ MBC1 with 8 KB battery-backed RAM (cart type `0x03`).
 
 | Key | Browser mode | Shell mode | File pager | Text editor (`gbedit`) |
 |---|---|---|---|---|
-| **D-Pad Up/Down** | Move cursor in listing | Move on on-screen keyboard | Scroll 1 line | Move on keyboard |
+| **D-Pad Up/Down** | Move cursor; scroll at list edges | Move on on-screen keyboard | Scroll 1 line | Move on keyboard |
 | **D-Pad Left/Right** | Page up/down | Move on keyboard (wraps) | Page up/down | Move on keyboard (wraps) |
 | **A** | Enter dir / open file | Type character | Close | Insert selected character |
 | **B** | `cd ..` (parent dir) | Backspace | Close | Backspace (joins lines at column 0) |
@@ -48,8 +48,9 @@ chiptune jingle (pulse melody + bass + noise hat) loops here only.
    (stopping the moment you log in or open the key help).
 2. **Browser** — an `ls`-style listing of the current directory with a cursor.
    The header shows the cwd path, the footer shows the selected item's info
-   (`name`, item count for dirs, `sizeB ro/rw` for files). Select toggles the
-   long listing: `drwxr-xr-x bin`.
+   (`name`, item count for dirs, `sizeB ro/rw` for files). Long listings scroll
+   vertically when the cursor reaches the top or bottom; Left/Right jump a
+   page at a time. Select toggles the long listing: `drwxr-xr-x bin`.
 3. **File pager** — full-screen text view of a file's contents, scrollable
    with Up/Down, paged with Left/Right, closed with A/B/Start.
 4. **Shell** — a scrolling 20×11 terminal with a path prompt (`/$`, `/etc$`,

@@ -1,6 +1,8 @@
 # gb-unix —  Unix filesystem-like for Game Boy
 
-![gb-unix](preview.png)
+<p align="center">
+  <img src="preview.png" alt="gb-unix">
+</p>
 
 A playable Game Boy ROM that boots into a tiny Unix-like environment: a file
 browser over a fake root filesystem (`/`, `/bin`, `/etc`, `/home/user`, ...)

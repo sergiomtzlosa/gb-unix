@@ -111,7 +111,6 @@ shell_set_prompt::
 	call mem_copy
 	ret
 .named:
-	ld [fs_tmp], a
 	call fs_node_addr
 	inc hl              ; name
 	ld de, sh_promptbuf
@@ -729,19 +728,15 @@ shell_update::
 	ld a, [joy_pressed]
 	and J_LEFT
 	jp nz, .kb_left
-.right:
 	ld a, [joy_pressed]
 	and J_RIGHT
 	jp nz, .kb_right
-.a_key:
 	ld a, [joy_pressed]
 	and J_A
 	jp nz, .key_a
-.b_key:
 	ld a, [joy_pressed]
 	and J_B
 	jp nz, .key_b
-.start_key:
 	ld a, [joy_pressed]
 	and J_START
 	jp nz, .key_start

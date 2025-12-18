@@ -292,6 +292,10 @@ and assembled with `rgbasm`; C artifacts land in `build/`. Override
 `AS`/`CC`/`LD`/`FIX` in the Makefile (or `RGBDS_DIR`) to use system tools
 instead of the bundled ones.
 
+GitHub Actions (`.github/workflows/build.yml`) build `gb-unix.gb` on every
+push and pull request; published releases get the built ROM plus a source
+zip of the code (`gb-unix-src.zip`) attached.
+
 ## Running
 
 Open `gb-unix.gb` in any Game Boy emulator (mGBA, SameBoy, PyBoy, BGB, ...)

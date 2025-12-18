@@ -1,6 +1,5 @@
 ; fs.inc — filesystem node/SRAM layout + error codes (shared)
 
-def N_TYPE       equ 0
 def N_PARENT     equ 12
 def N_CHILD      equ 13
 def N_SIBLING    equ 14

@@ -1,0 +1,55 @@
+name: build
+
+on:
+  push:
+  pull_request:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build ROM
+        run: |
+          make
+          test -f gb-unix.gb
+
+      - name: Upload ROM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gb-unix-rom
+          path: gb-unix.gb
+
+  release:
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download built ROM
+        uses: actions/download-artifact@v4
+        with:
+          name: gb-unix-rom
+          path: dist
+
+      - name: Package source zip
+        run: |
+          git archive --format=zip --prefix=gb-unix/ -o gb-unix-src.zip HEAD
+          zip -d gb-unix-src.zip 'gb-unix/gb-unix.gb'
+
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            dist/gb-unix.gb \
+            gb-unix-src.zip \
+            --clobber

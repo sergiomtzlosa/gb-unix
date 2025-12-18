@@ -177,12 +177,6 @@ kb_move_right::
 shell_render_kb::
 	ld b, 0             ; kb row
 .krow:
-	push bc
-	ld a, b
-	add KB_SCREEN_TOP
-	ld c, 0
-	call txt_goto
-	pop bc
 	ld c, 0             ; key col
 .kcol:
 	push bc

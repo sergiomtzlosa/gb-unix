@@ -18,8 +18,6 @@ section "browser", rom0
 
 browser_enter::
 	xor a
-	ld [list_offset], a
-	ld [list_cursor], a
 	ld [long_mode], a
 	ld [b_combo], a
 	ld [b_armed], a

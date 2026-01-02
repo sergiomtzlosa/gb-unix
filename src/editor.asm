@@ -277,10 +277,7 @@ editor_enter::
 ; ---- rendering --------------------------------------------------------
 
 editor_render_all:
-	call ed_ensure_visible
-	call ed_draw_header
-	call ed_draw_text
-	call ed_draw_hints
+	call editor_render
 	jp shell_render_kb
 
 editor_render:

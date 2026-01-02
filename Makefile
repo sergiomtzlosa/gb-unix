@@ -42,12 +42,6 @@ SDCC_CMD := $(SDCC_LOCAL_BIN)
 SDCC_INC := $(SDCC_LOCAL_INC)
 endif
 
-ifeq ($(SDCC_OK),1)
-# Use the system (or user-supplied) SDCC as-is.
-else ifeq ($(SDCC_LOCAL_OK),1)
-CC := $(SDCC_LOCAL_BIN)
-endif
-
 .DEFAULT_GOAL := all
 .PHONY: all clean shcmd help install-sdcc sdcc-download
 
@@ -95,7 +89,7 @@ $(BUILD)/%.o: src/%.asm $(HDR)
 ifeq ($(SDCC_FOUND),1)
 $(BUILD)/shcmd_sdcc.s: src/shcmd.c
 	@mkdir -p $(BUILD)
-	$(CC) $(CCFLAGS) $(SDCC_INC) -S $< -o $@
+	$(SDCC_CMD) $(CCFLAGS) $(SDCC_INC) -S $< -o $@
 
 $(BUILD)/shcmd.o: $(BUILD)/shcmd_sdcc.s
 	$(AS) $(ASFLAGS) -o $@ $<

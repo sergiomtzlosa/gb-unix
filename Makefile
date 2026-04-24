@@ -1,6 +1,8 @@
 # gb-unix — Game Boy Unix filesystem ROM
-# Assembly uses the bundled RGBDS in tools/rgbds by default; override AS/LD/FIX
-# to use a system install. The C modules (src/*.c) are compiled by SDCC to
+# Assembly uses the bundled RGBDS for this OS/CPU (tools/rgbds/<os>-<arch>)
+# by default; if no matching build is bundled, rgbasm/rgblink/rgbfix from PATH
+# are used. Override RGBDS_DIR (or AS/LD/FIX) to use another install.
+# The C modules (src/*.c) are compiled by SDCC to
 # RGBDS-syntax assembly (--asm=rgbds) and assembled with rgbasm. If SDCC 4.2+
 # is not available, a pre-generated assembly file is used so RGBDS alone can
 # build. C artifacts are kept in build/ so make's built-in %.o: %.c rule and
@@ -8,11 +10,22 @@
 # prebuilt SDCC for Linux/macOS when the system compiler is missing or too old,
 # then regenerates the assembly.
 
-RGBDS_DIR ?= tools/rgbds
-AS := $(RGBDS_DIR)/rgbasm
+# Bundled binaries live in per-platform directories named after
+# `uname -s`/`uname -m`, lowercased, with amd64/aarch64 normalized.
+UNAME_S := $(shell uname -s 2>/dev/null | tr '[:upper:]' '[:lower:]')
+UNAME_M := $(shell uname -m 2>/dev/null)
+ifeq ($(UNAME_M),amd64)
+UNAME_M := x86_64
+endif
+ifeq ($(UNAME_M),aarch64)
+UNAME_M := arm64
+endif
+RGBDS_PLATFORM := $(UNAME_S)-$(UNAME_M)
+RGBDS_DIR ?= $(if $(wildcard tools/rgbds/$(RGBDS_PLATFORM)/rgbasm),tools/rgbds/$(RGBDS_PLATFORM),)
+AS := $(if $(RGBDS_DIR),$(RGBDS_DIR)/rgbasm,rgbasm)
 ASFLAGS := -I src
-LD := $(RGBDS_DIR)/rgblink
-FIX := $(RGBDS_DIR)/rgbfix
+LD := $(if $(RGBDS_DIR),$(RGBDS_DIR)/rgblink,rgblink)
+FIX := $(if $(RGBDS_DIR),$(RGBDS_DIR)/rgbfix,rgbfix)
 CC := sdcc
 CCFLAGS := -msm83 --asm=rgbds --no-peep
 
@@ -54,6 +67,8 @@ help:
 	@echo "  make install-sdcc  Download prebuilt SDCC for Linux/macOS if needed"
 	@echo "  make shcmd       Download SDCC if needed, then regenerate C-to-RGBDS assembly"
 	@echo "  make help        Show this help"
+	@echo ""
+	@echo "Using RGBDS: $(AS)"
 	@echo ""
 	@echo "gbsh commands (run inside the ROM shell):"
 	@echo "  help             List commands and shell key bindings"

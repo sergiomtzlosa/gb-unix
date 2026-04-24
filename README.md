@@ -250,8 +250,11 @@ Notes:
 
 ## Building
 
-The Makefile uses the prebuilt [RGBDS](https://rgbds.gbdev.io/) in
-`tools/rgbds/`, so `make` works without installing `rgbasm`/`rgblink`/`rgbfix`.
+The Makefile uses the prebuilt [RGBDS](https://rgbds.gbdev.io/) matching the
+host platform in `tools/rgbds/<os>-<arch>/`, so `make` works without installing
+`rgbasm`/`rgblink`/`rgbfix`. Bundled builds are provided for Linux x86-64,
+macOS arm64, and macOS x86-64; other platforms fall back to RGBDS from `PATH`.
+See [`tools/rgbds/README.md`](tools/rgbds/README.md) for details.
 [SDCC](https://sdcc.sourceforge.net/) (`sdcc`, 4.2+) is only needed to
 recompile the C module after editing `src/*.c`; if it is not installed, the
 build uses the checked-in `src/generated/shcmd_sdcc.asm`. Normal `make` never
@@ -288,9 +291,9 @@ command available inside the ROM shell.
 
 When a 4.2+ SDCC is available (system or downloaded), the C sources
 (`src/*.c`) are compiled to RGBDS-syntax assembly (`--asm=rgbds --no-peep`)
-and assembled with `rgbasm`; C artifacts land in `build/`. Override
-`AS`/`CC`/`LD`/`FIX` in the Makefile (or `RGBDS_DIR`) to use system tools
-instead of the bundled ones.
+and assembled with `rgbasm`; C artifacts land in `build/`. Set `RGBDS_DIR` to
+use a different RGBDS directory, or override `AS`/`CC`/`LD`/`FIX` directly.
+For example, `make RGBDS_DIR=` uses the system RGBDS from `PATH`.
 
 GitHub Actions (`.github/workflows/build.yml`) build `gb-unix.gb` on every
 push and pull request; published releases get the built ROM plus a source
@@ -322,7 +325,7 @@ gb-unix/
 ├── Makefile            — sdcc (C) + rgbasm → rgblink → rgbfix, outputs gb-unix.gb
 ├── README.md
 ├── build/              — build artifacts (objects, generated asm)
-├── tools/              — prebuilt RGBDS + genfont/genlogo/genfs generators
+├── tools/              — per-platform RGBDS + genfont/genlogo/genfs generators
 └── src/
     ├── main.asm        — entry point, cart header, boot, title splash, main loop
     ├── hardware.inc    — hardware register equates

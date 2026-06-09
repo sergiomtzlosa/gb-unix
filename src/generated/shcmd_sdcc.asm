@@ -5,7 +5,7 @@
 
 ;--------------------------------------------------------
 ; File Created by SDCC : free open source ISO C Compiler
-; Version 4.4.1 #14650 (Linux)
+; Version 4.5.0 #15242 (Mac OS X ppc)
 ;--------------------------------------------------------
 	; MODULE shcmd
 	; Generated using the rgbds tokens.
@@ -94,8 +94,7 @@ _off_row:
 ; ---------------------------------
 _shc_scroll:
 ;src/shcmd.c:66: s_c = scr_top + 1;
-	ld	hl, _scr_top
-	ld	a, [hl]
+	ld	a, [_scr_top]
 	inc	a
 	ld	hl, _s_c
 	ld	[hl], a
@@ -127,8 +126,9 @@ _shc_scroll:
 	inc	hl
 	ld	[hl], a
 ;src/shcmd.c:71: for (s_i = 0; s_i < SCREEN_W; s_i++)
+	xor	a, a
 	ld	hl, _s_i
-	ld	[hl], $00
+	ld	[hl], a
 .l00107:
 ;src/shcmd.c:73: shc_load((uint16_t)screen_buf + s_src + s_i));
 	ld	a, LOW(_screen_buf)
@@ -139,13 +139,9 @@ _shc_scroll:
 	inc	hl
 	adc	a, [hl]
 	ld	b, a
-	ld	hl, _s_i
-	ld	l, [hl]
-;	spillPairReg hl
-;	spillPairReg hl
+	ld	a, [_s_i]
+	ld	l, a
 	ld	h, $00
-;	spillPairReg hl
-;	spillPairReg hl
 	add	hl, bc
 	ld	e, l
 	ld	d, h
@@ -160,13 +156,9 @@ _shc_scroll:
 	inc	hl
 	adc	a, [hl]
 	ld	d, a
-	ld	hl, _s_i
-	ld	l, [hl]
-;	spillPairReg hl
-;	spillPairReg hl
+	ld	a, [_s_i]
+	ld	l, a
 	ld	h, $00
-;	spillPairReg hl
-;	spillPairReg hl
 	add	hl, de
 	ld	e, l
 	ld	d, h
@@ -184,16 +176,16 @@ _shc_scroll:
 	jp	.l00102
 .l00104:
 ;src/shcmd.c:76: s_base = off_row(scr_bot);
-	ld	hl, _scr_bot
-	ld	a, [hl]
+	ld	a, [_scr_bot]
 	call	_off_row
 	ld	hl, _s_base
 	ld	[hl], c
 	inc	hl
 	ld	[hl], b
 ;src/shcmd.c:77: for (s_i = 0; s_i < SCREEN_W; s_i++)
+	xor	a, a
 	ld	hl, _s_i
-	ld	[hl], $00
+	ld	[hl], a
 .l00109:
 ;src/shcmd.c:78: shc_store((uint16_t)screen_buf + s_base + s_i, 0); /* tile 0 = space */
 	ld	a, LOW(_screen_buf)
@@ -204,13 +196,9 @@ _shc_scroll:
 	inc	hl
 	adc	a, [hl]
 	ld	b, a
-	ld	hl, _s_i
-	ld	l, [hl]
-;	spillPairReg hl
-;	spillPairReg hl
+	ld	a, [_s_i]
+	ld	l, a
 	ld	h, $00
-;	spillPairReg hl
-;	spillPairReg hl
 	add	hl, bc
 	ld	e, l
 	ld	d, h
@@ -235,12 +223,9 @@ _shc_scroll:
 	jp	C, .l00114
 ;src/shcmd.c:80: shc_store((uint16_t)dirty_rows + s_r, 1);
 	ld	bc, _dirty_rows
-	ld	l, [hl]
-;	spillPairReg hl
-;	spillPairReg hl
+	ld	a, [hl]
+	ld	l, a
 	ld	h, $00
-;	spillPairReg hl
-;	spillPairReg hl
 	add	hl, bc
 	ld	e, l
 	ld	d, h
@@ -259,11 +244,12 @@ _shc_scroll:
 ; ---------------------------------
 _shc_newline:
 ;src/shcmd.c:86: cur_col = 0;
+	xor	a, a
 	ld	hl, _cur_col
-	ld	[hl], $00
+	ld	[hl], a
 ;src/shcmd.c:87: if ((uint8_t)(cur_row + 1) > scr_bot) {
-	ld	hl, _cur_row
-	ld	c, [hl]
+	ld	a, [_cur_row]
+	ld	c, a
 	inc	c
 	ld	b, c
 	ld	hl, _scr_bot
@@ -290,16 +276,19 @@ _shc_newline:
 ; Function shc_putc
 ; ---------------------------------
 _shc_putc::
+	dec	sp
 ;src/shcmd.c:98: uint8_t ch = (uint8_t)c_in;
-	ld	e, a
+	ld	hl, sp+0
+	ld	[hl], a
 ;src/shcmd.c:102: if (ch == '\n') {
 	cp	a, $0A
-	jp	NZ,.l00131
+	jp	NZ, .l00131
 	jp	.l00132
 .l00131:
 	jp	.l00102
 .l00132:
 ;src/shcmd.c:103: shc_newline();
+	inc	sp
 	jp	_shc_newline
 ;src/shcmd.c:104: return;
 	jp	.l00108
@@ -311,7 +300,8 @@ _shc_putc::
 	jp	C, .l00104
 .l00103:
 ;src/shcmd.c:107: ch = '.';                          /* control bytes render as '.' */
-	ld	e, $2E
+	ld	hl, sp+0
+	ld	[hl], $2E
 .l00104:
 ;src/shcmd.c:108: if (cur_col >= SCREEN_W)
 	ld	hl, _cur_col
@@ -319,49 +309,39 @@ _shc_putc::
 	sub	a, $14
 	jp	C, .l00107
 ;src/shcmd.c:109: shc_newline();                     /* resolve pending wrap */
-	push	de
 	call	_shc_newline
-	pop	de
 .l00107:
 ;src/shcmd.c:110: r = cur_row;
-	ld	hl, _cur_row
-	ld	d, [hl]
+	ld	a, [_cur_row]
+	ld	e, a
 ;src/shcmd.c:111: off = off_row(r) + cur_col;
 	push	de
-	ld	a, d
+	ld	a, e
 	call	_off_row
 	pop	de
-	ld	hl, _cur_col
-	ld	l, [hl]
-;	spillPairReg hl
-;	spillPairReg hl
+	ld	a, [_cur_col]
+	ld	l, a
 	ld	h, $00
-;	spillPairReg hl
-;	spillPairReg hl
 	add	hl, bc
 	ld	c, l
 	ld	b, h
 ;src/shcmd.c:112: shc_store((uint16_t)screen_buf + off, ch - 0x20u);
-	ld	a, e
+	ld	hl, sp+0
+	ld	a, [hl]
 	add	a, $E0
-	ld	e, a
+	ld	d, a
 	ld	hl, _screen_buf
 	add	hl, bc
 	push	de
-	ld	a, e
+	ld	a, d
 	ld	e, l
 	ld	d, h
 	call	_shc_store
 	pop	de
 ;src/shcmd.c:113: shc_store((uint16_t)dirty_rows + r, 1);
-	ld	l, d
-;	spillPairReg hl
-;	spillPairReg hl
-	ld	bc, _dirty_rows
-	ld	h, $00
-;	spillPairReg hl
-;	spillPairReg hl
-	add	hl, bc
+	ld	hl, _dirty_rows
+	ld	d, $00
+	add	hl, de
 	ld	e, l
 	ld	d, h
 	ld	a, $01
@@ -371,6 +351,7 @@ _shc_putc::
 	inc	[hl]
 .l00108:
 ;src/shcmd.c:115: }
+	inc	sp
 	ret
 ;src/shcmd.c:118: void shc_puts(const char *s)
 ;	---------------------------------
@@ -410,10 +391,10 @@ _shc_pwd::
 ;src/shcmd.c:132: uint8_t node = fs_get_cwd();
 	call	_fs_get_cwd
 	ld	c, a
-	ld	b, c
-;src/shcmd.c:133: if (node == 0) {
 	ld	a, c
-	or	a, a
+;src/shcmd.c:133: if (node == 0) {
+	inc	c
+	dec	c
 	jp	NZ, .l00102
 ;src/shcmd.c:134: shc_puts("/ (root)");              /* "/" alone is easy to miss */
 	ld	de, ___str_0
@@ -425,7 +406,6 @@ _shc_pwd::
 	jp	.l00103
 .l00102:
 ;src/shcmd.c:138: fs_pwd_str(node);                      /* fills pwd_buf */
-	ld	a, b
 	call	_fs_pwd_str
 ;src/shcmd.c:139: shc_puts(pwd_buf);
 	ld	de, _pwd_buf
@@ -454,7 +434,7 @@ _shc_echo_plain::
 ;src/shcmd.c:148: if (i != 1)
 	ld	a, c
 	dec	a
-	jp	NZ,.l00131
+	jp	NZ, .l00131
 	jp	.l00102
 .l00131:
 ;src/shcmd.c:149: shc_putc(' ');
@@ -465,21 +445,16 @@ _shc_echo_plain::
 .l00102:
 ;src/shcmd.c:150: shc_puts(sh_args[i]);
 	ld	l, c
-;	spillPairReg hl
-;	spillPairReg hl
 	ld	h, $00
-;	spillPairReg hl
-;	spillPairReg hl
 	add	hl, hl
 	ld	de, _sh_args
 	add	hl, de
-	ld	b, [hl]
+	ld	a, [hl]
 	inc	hl
-	ld	l, [hl]
-;	spillPairReg hl
+	ld	b, [hl]
 	push	bc
-	ld	e, b
-	ld	d, l
+	ld	e, a
+	ld	d, b
 	call	_shc_puts
 	pop	bc
 ;src/shcmd.c:147: for (i = 1; i < sh_argc; i++) {

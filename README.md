@@ -296,8 +296,9 @@ use a different RGBDS directory, or override `AS`/`CC`/`LD`/`FIX` directly.
 For example, `make RGBDS_DIR=` uses the system RGBDS from `PATH`.
 
 GitHub Actions (`.github/workflows/build.yml`) build `gb-unix.gb` on every
-push and pull request; published releases get the built ROM plus a source
-zip of the code (`gb-unix-src.zip`) attached.
+push and pull request; published releases get the built ROM
+(`gb-unix-<version>.gb`) plus a source tarball of the code
+(`gb-unix-<version>.tar.gz`) attached.
 
 ## Running
 

@@ -31,6 +31,8 @@ jobs:
     if: github.event_name == 'release'
     needs: build
     runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.release.tag_name }}
     steps:
       - uses: actions/checkout@v4
 
@@ -40,16 +42,28 @@ jobs:
           name: gb-unix-rom
           path: dist
 
-      - name: Package source zip
+      - name: Package release assets
         run: |
-          git archive --format=zip --prefix=gb-unix/ -o gb-unix-src.zip HEAD
-          zip -d gb-unix-src.zip 'gb-unix/gb-unix.gb'
+          set -eu
+          version="${TAG#v}"
+          rom="dist/gb-unix-${version}.gb"
+          tarball="dist/gb-unix-${version}.tar.gz"
+
+          mv dist/gb-unix.gb "$rom"
+
+          # Source tarball without the tracked build output; the ROM is
+          # shipped separately above.
+          git archive --format=tar --prefix=gb-unix/ -o dist/gb-unix-src.tar HEAD
+          tar --delete -f dist/gb-unix-src.tar gb-unix/gb-unix.gb
+          gzip -9 -n -c dist/gb-unix-src.tar > "$tarball"
+          rm -f dist/gb-unix-src.tar
 
       - name: Upload release assets
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload "${{ github.event.release.tag_name }}" \
-            dist/gb-unix.gb \
-            gb-unix-src.zip \
+          version="${TAG#v}"
+          gh release upload "$TAG" \
+            "dist/gb-unix-${version}.gb" \
+            "dist/gb-unix-${version}.tar.gz" \
             --clobber

@@ -1,4 +1,4 @@
-# gb-unix —  Unix filesystem-like for Game Boy
+# gb-unix -  Unix filesystem-like for Game Boy
 
 <p align="center">
   <img src="preview.png" alt="gb-unix">
@@ -294,11 +294,6 @@ When a 4.2+ SDCC is available (system or downloaded), the C sources
 and assembled with `rgbasm`; C artifacts land in `build/`. Set `RGBDS_DIR` to
 use a different RGBDS directory, or override `AS`/`CC`/`LD`/`FIX` directly.
 For example, `make RGBDS_DIR=` uses the system RGBDS from `PATH`.
-
-GitHub Actions (`.github/workflows/build.yml`) build `gb-unix.gb` on every
-push and pull request; published releases get the built ROM
-(`gb-unix-<version>.gb`) plus a source tarball of the code
-(`gb-unix-<version>.tar.gz`) attached.
 
 ## Running
 
